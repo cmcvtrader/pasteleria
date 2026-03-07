@@ -7,23 +7,30 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* PALETA PASTEL REPOSTERÍA */
-            --bg: #fff5f8;             
+            /* Paleta de Colores Oficial */
+            --marble-white: #fafaf9;
+            --concrete: #e7e5e4;
+            --gold: #f59e0b;
+            --sage-green: #84cc16;
+            --text-dark: #292524;
+            
+            /* Mapeo de la app */
+            --bg: var(--marble-white);             
             --surface: #ffffff;        
-            --border: #fce7f3;         
-            --primary: #f472b6;        
-            --primary-light: #fdf2f8;  
-            --secondary: #5eead4;      
-            --secondary-text: #0f766e; 
-            --secondary-light: #f0fdfa;
-            --accent: #93c5fd;         
-            --accent-text: #1d4ed8;    
-            --accent-light: #eff6ff;
+            --border: var(--concrete);         
+            --primary: var(--gold);        
+            --primary-light: #fef3c7;  
+            --secondary: var(--sage-green);      
+            --secondary-text: #3f6212; 
+            --secondary-light: #ecfccb;
+            --accent: var(--gold);         
+            --accent-text: #b45309;    
+            --accent-light: #fef3c7;
             --red-pastel: #fda4af;     
             --red-text: #e11d48;
             --red-light: #fff1f2;
-            --text: #334155;           
-            --muted: #94a3b8;          
+            --text: var(--text-dark);           
+            --muted: #78716c;          
             --serif: 'DM Serif Display', Georgia, serif;
             --sans: 'DM Sans', system-ui, sans-serif;
         }
@@ -44,7 +51,7 @@
             padding-bottom: 80px;
             border-left: 1px solid var(--border);
             border-right: 1px solid var(--border);
-            box-shadow: 0 4px 25px rgba(244, 114, 182, 0.05);
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
         }
 
         /* LOGIN */
@@ -55,7 +62,7 @@
         .login-box {
             background: var(--surface); padding: 40px 36px;
             border-radius: 24px; border: 2px solid var(--border); width: 100%; max-width: 380px;
-            text-align: center; box-shadow: 0 10px 25px rgba(244, 114, 182, 0.08);
+            text-align: center; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
         .login-logo { font-size: 3.5rem; margin-bottom: 10px; display: block; animation: float 3s ease-in-out infinite; }
         
@@ -77,7 +84,7 @@
         .header {
             padding: 20px; border-bottom: 2px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
-            background: rgba(255,255,255,0.95); position: sticky; top: 0; z-index: 10;
+            background: rgba(250, 250, 249, 0.95); position: sticky; top: 0; z-index: 10;
             backdrop-filter: blur(10px);
         }
         .header-title { font-family: var(--serif); font-size: 1.3rem; color: var(--primary); }
@@ -91,17 +98,24 @@
             width: 100%; padding: 15px; background: var(--primary); color: white;
             border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer;
             transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 4px 15px rgba(244, 114, 182, 0.3);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
         }
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
         
         .btn-print-comanda {
             width: 100%; padding: 10px; background: var(--surface); color: var(--text);
-            border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 500; cursor: pointer; margin-top: 8px;
+            border: 1px solid var(--border); border-radius: 8px; font-weight: 500; cursor: pointer; margin-top: 8px;
             font-size: 0.85rem; transition: background 0.2s;
         }
-        .btn-print-comanda:hover { background: #f1f5f9; }
+        .btn-print-comanda:hover { background: var(--concrete); }
+
+        .btn-whatsapp {
+            width: 100%; padding: 10px; background: #25D366; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;
+            font-size: 0.85rem; transition: opacity 0.2s;
+        }
+        .btn-whatsapp:hover { opacity: 0.9; }
 
         /* TARJETAS DE PEDIDO */
         .pedido-card {
@@ -144,7 +158,7 @@
         /* NAVBAR */
         .nav-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 480px; display: flex;
-            background: rgba(255,255,255,0.95); border-top: 2px solid var(--border); z-index: 10;
+            background: rgba(250, 250, 249, 0.95); border-top: 2px solid var(--border); z-index: 10;
         }
         .nav-item {
             flex: 1; padding: 16px; text-align: center; font-weight: 500; font-size: 0.9rem;
@@ -159,13 +173,11 @@
             background: var(--secondary-light); color: var(--secondary-text); border: 2px solid var(--secondary);
         }
 
-        /* =========================================================
-           MAGIA DE IMPRESIÓN (CSS PRINT MEDIA)
-           ========================================================= */
+        /* MAGIA DE IMPRESIÓN */
         #ticket-impresion { display: none; }
 
         @media print {
-            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .filtro-finanzas { display: none !important; }
+            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .btn-whatsapp, .filtro-finanzas { display: none !important; }
             body { background: white; color: black; }
             .app-container { box-shadow: none; border: none; max-width: 100%; padding-bottom: 0; }
             
@@ -200,12 +212,11 @@
     </div>
     <div class="ticket-divisor"></div>
     <p style="text-align: center; font-size: 1.2rem; font-weight: bold;" id="tk-fecha">ENTREGAR EL: 00/00/0000</p>
-    <div class="ticket-gigante" id="tk-producto">
-        1x Tarta de Chocolate
-    </div>
+    <div class="ticket-gigante" id="tk-producto">1x Tarta de Chocolate</div>
     <div class="ticket-divisor"></div>
     <div class="ticket-info">
         <p><strong>Cliente:</strong> <span id="tk-cliente">Nombre</span></p>
+        <p><strong>Teléfono:</strong> <span id="tk-telefono">000000000</span></p>
         <p><strong>Pago:</strong> <span id="tk-pago">Estado pago</span></p>
         <p><strong>Total:</strong> <span id="tk-total">0.00</span></p>
     </div>
@@ -235,8 +246,16 @@
         <div class="content">
             <div id="msg-alerta"></div>
 
-            <label>Nombre del Cliente</label>
-            <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez">
+            <div class="input-grid">
+                <div>
+                    <label>Nombre del Cliente</label>
+                    <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez">
+                </div>
+                <div>
+                    <label>Teléfono (WhatsApp)</label>
+                    <input type="tel" id="in-telefono" placeholder="Ej. 600123456">
+                </div>
+            </div>
 
             <label>Producto o Tarta</label>
             <input type="text" id="in-producto" placeholder="Ej. Torta Tres Leches">
@@ -306,12 +325,11 @@
             <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
         </div>
         <div class="content" style="padding-bottom: 40px;">
-            
-            <div class="filtro-finanzas" style="background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+            <div class="filtro-finanzas" style="background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 15px; margin-bottom: 20px;">
                 <label style="margin-bottom: 10px; color: var(--primary); font-weight: bold;">🔍 Filtrar Ventas por Fecha</label>
                 <div class="input-grid" style="margin-bottom: 10px;">
                     <div>
-                        <span style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 4px;">Desde (Día pedido):</span>
+                        <span style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 4px;">Desde:</span>
                         <input type="date" id="filtro-inicio" style="margin-bottom: 0; padding: 10px;">
                     </div>
                     <div>
@@ -321,10 +339,7 @@
                 </div>
                 <button class="btn-primary" onclick="cargarFinanzas()" style="padding: 10px; font-size: 0.9rem;">Calcular Periodo</button>
             </div>
-
-            <div id="resumen-finanzas">
-                <p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>
-            </div>
+            <div id="resumen-finanzas"></div>
         </div>
     </div>
 
@@ -337,13 +352,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// --- TUS CLAVES REALES DE SUPABASE ---
 const SUPABASE_URL = 'https://lvnnmddprjaettekxvfi.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh';
 const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let pedidosActuales = []; 
-let usuarioActual = null; // <- ESTA ES LA NUEVA VARIABLE MÁGICA
+let usuarioActual = null; 
 
 document.addEventListener('DOMContentLoaded', () => {
     verificarSesion();
@@ -358,12 +372,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// --- AUTH ---
 async function verificarSesion() {
     try {
         const { data: { session } } = await clienteSupabase.auth.getSession();
         if (session) {
-            usuarioActual = session.user; // Guardamos quién acaba de entrar
+            usuarioActual = session.user; 
             document.getElementById('pantalla-login').classList.add('hidden');
             document.getElementById('pantalla-app').classList.remove('hidden');
             cargarAgenda();
@@ -388,29 +401,20 @@ async function iniciarSesion() {
         const { error, data } = await clienteSupabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         
-        usuarioActual = data.user; // Registramos su identidad
-        document.getElementById('email').value = ''; 
-        document.getElementById('password').value = '';
+        usuarioActual = data.user; 
+        document.getElementById('email').value = ''; document.getElementById('password').value = '';
         verificarSesion();
-    } catch (e) {
-        err.innerText = 'Credenciales incorrectas.'; err.style.display = 'block';
-    } finally {
-        btn.innerText = 'Entrar al Obrador'; btn.disabled = false;
-    }
+    } catch (e) { err.innerText = 'Credenciales incorrectas.'; err.style.display = 'block'; } 
+    finally { btn.innerText = 'Entrar al Obrador'; btn.disabled = false; }
 }
 
-async function cerrarSesion() { 
-    await clienteSupabase.auth.signOut(); 
-    cambiarPestana('nuevo'); 
-}
+async function cerrarSesion() { await clienteSupabase.auth.signOut(); cambiarPestana('nuevo'); }
 
-// --- NAVEGACIÓN ---
 function cambiarPestana(pestana) {
     ['nuevo', 'agenda', 'finanzas'].forEach(p => {
         document.getElementById('view-' + p).classList.add('hidden');
         document.getElementById('tab-' + p).classList.remove('active');
     });
-
     document.getElementById('view-' + pestana).classList.remove('hidden');
     document.getElementById('tab-' + pestana).classList.add('active');
     
@@ -425,7 +429,6 @@ function mostrarAlerta(texto) {
     setTimeout(() => msg.style.display = 'none', 3500);
 }
 
-// --- LÓGICA DE IMPRESIÓN ---
 function imprimirComanda(idPedido) {
     const p = pedidosActuales.find(x => x.id == idPedido);
     if(!p) return;
@@ -437,13 +440,11 @@ function imprimirComanda(idPedido) {
     document.getElementById('tk-fecha').innerText = `ENTREGAR EL: ${dE}/${mE}/${yE}`;
     document.getElementById('tk-producto').innerText = `${p.cantidad}x ${p.producto}`;
     document.getElementById('tk-cliente').innerText = p.cliente;
+    document.getElementById('tk-telefono').innerText = p.telefono || 'No indicado';
     document.getElementById('tk-total').innerText = `${total.toFixed(2)} €`;
     
-    if(resta > 0) {
-        document.getElementById('tk-pago').innerText = `DEBE ${resta.toFixed(2)} € (Abonó ${p.abono}€)`;
-    } else {
-        document.getElementById('tk-pago').innerText = `✅ PAGADO COMPLETO`;
-    }
+    if(resta > 0) { document.getElementById('tk-pago').innerText = `DEBE ${resta.toFixed(2)} € (Abonó ${p.abono}€)`; } 
+    else { document.getElementById('tk-pago').innerText = `✅ PAGADO COMPLETO`; }
 
     document.body.classList.add('modo-ticket');
     window.print();
@@ -456,10 +457,10 @@ function imprimirAgenda() {
     document.body.classList.remove('modo-agenda');
 }
 
-// --- LOGICA: GUARDAR PEDIDO (AHORA MULTI-USUARIO) ---
 async function guardarPedido() {
     const btn = document.getElementById('btn-guardar');
     const cliente = document.getElementById('in-cliente').value.trim();
+    const telefono = document.getElementById('in-telefono').value.trim();
     const producto = document.getElementById('in-producto').value.trim();
     const cantidad = document.getElementById('in-cantidad').value;
     const precio = document.getElementById('in-precio').value;
@@ -472,18 +473,15 @@ async function guardarPedido() {
         alert("⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega.");
         return;
     }
-    
-    if(!usuarioActual) {
-        alert("Error de sesión. Por favor, recarga la página.");
-        return;
-    }
+    if(!usuarioActual) return;
 
     btn.innerText = 'Guardando...'; btn.disabled = true;
 
     try {
         const { error } = await clienteSupabase.from('pasteleria').insert([{
-            user_id: usuarioActual.id, // <- ETIQUETA INVISIBLE PARA SABER DE QUIÉN ES EL PEDIDO
+            user_id: usuarioActual.id,
             cliente: cliente,
+            telefono: telefono,
             producto: producto,
             cantidad: parseInt(cantidad),
             precio: parseFloat(precio),
@@ -495,96 +493,76 @@ async function guardarPedido() {
         }]);
 
         if (error) throw error;
-        
         mostrarAlerta("✨ ¡Pedido guardado con éxito!");
         
         document.getElementById('in-cliente').value = '';
+        document.getElementById('in-telefono').value = '';
         document.getElementById('in-producto').value = '';
         document.getElementById('in-precio').value = '';
         document.getElementById('in-abono').value = '0';
         document.getElementById('in-cantidad').value = '1';
         document.getElementById('in-metodo').value = 'Bizum';
         
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        btn.innerText = 'Anotar Pedido'; btn.disabled = false;
-    }
+    } catch (err) { alert("Error: " + err.message); } 
+    finally { btn.innerText = 'Anotar Pedido'; btn.disabled = false; }
 }
 
-// --- LOGICA: ACTUALIZAR ABONO / PAGO ---
 async function agregarPago(id, abonoActual, falta) {
-    let inputStr = prompt(`El cliente aún debe: ${falta.toFixed(2)} €\n\n¿Cuánto dinero está entregando en este momento?`, falta.toFixed(2));
+    let inputStr = prompt(`El cliente aún debe: ${falta.toFixed(2)} €\n\n¿Cuánto dinero entrega ahora?`, falta.toFixed(2));
     if (inputStr === null || inputStr.trim() === '') return; 
-    
     let montoAdd = parseFloat(inputStr.replace(',', '.'));
-    if (isNaN(montoAdd) || montoAdd <= 0) {
-        alert("⚠️ Por favor ingresa una cantidad válida mayor a 0.");
-        return;
-    }
-
-    let nuevoAbono = parseFloat(abonoActual) + montoAdd;
+    if (isNaN(montoAdd) || montoAdd <= 0) { alert("⚠️ Cantidad inválida."); return; }
 
     try {
-        const { error } = await clienteSupabase
-            .from('pasteleria')
-            .update({ abono: nuevoAbono })
-            .eq('id', id)
-            .eq('user_id', usuarioActual.id); // Doble validación de seguridad
-
+        const { error } = await clienteSupabase.from('pasteleria')
+            .update({ abono: parseFloat(abonoActual) + montoAdd }).eq('id', id).eq('user_id', usuarioActual.id);
         if (error) throw error;
-        mostrarAlerta("💰 ¡Pago registrado con éxito!");
+        mostrarAlerta("💰 ¡Pago registrado!");
         cargarAgenda(); 
-    } catch (err) {
-        alert("Error al actualizar el pago: " + err.message);
-    }
+    } catch (err) { alert("Error: " + err.message); }
 }
 
-// --- LOGICA: AGENDA (AHORA FILTRADA POR USUARIO) ---
 async function cargarAgenda() {
     const contenedor = document.getElementById('lista-pedidos');
     if(!usuarioActual) return;
-    
-    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Actualizando agenda...</p>';
+    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Cargando...</p>';
 
     try {
-        const { data, error } = await clienteSupabase
-            .from('pasteleria')
-            .select('*')
-            .eq('user_id', usuarioActual.id) // <- SOLO DESCARGA SUS PROPIOS PEDIDOS
-            .order('fecha_entrega', { ascending: true });
-            
+        const { data, error } = await clienteSupabase.from('pasteleria').select('*')
+            .eq('user_id', usuarioActual.id).order('fecha_entrega', { ascending: true });
         if (error) throw error;
-
         pedidosActuales = data; 
 
         if (data.length === 0) {
-            contenedor.innerHTML = '<div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨</div>';
+            contenedor.innerHTML = '<div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">No hay pedidos pendientes.</div>';
             return;
         }
 
         contenedor.innerHTML = '';
-        
         data.forEach(p => {
             let [yE, mE, dE] = p.fecha_entrega.split('-');
             let esPendiente = p.estado === 'Pendiente';
-            let badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
-            
             let total = p.precio * p.cantidad;
             let resta = total - p.abono;
+            let badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
+            
             let estadoPagoHtml = resta > 0 
-                ? `<span class="pago-status pago-debe">Falta cobrar: ${resta.toFixed(2)} €</span>` 
-                : `<span class="pago-status pago-pagado">Pagado Totalmente</span>`;
+                ? `<span class="pago-status pago-debe">Falta: ${resta.toFixed(2)} €</span>` 
+                : `<span class="pago-status pago-pagado">Pagado</span>`;
 
             let btnAbonoHtml = resta > 0 
-                ? `<button class="btn-print-comanda" style="background: var(--accent-light); color: var(--accent-text); border-color: var(--accent);" onclick="agregarPago('${p.id}', ${p.abono}, ${resta})">💳 Registrar Pago / Abono</button>` 
-                : ``;
-
+                ? `<button class="btn-print-comanda" style="background: var(--accent-light); color: var(--accent-text); border-color: var(--accent);" onclick="agregarPago('${p.id}', ${p.abono}, ${resta})">💳 Añadir Pago</button>` : ``;
             let btnEntregarHtml = esPendiente 
-                ? `<button class="btn-entregar" onclick="marcarEntregado('${p.id}')">✔️ Marcar Entregado</button>` 
-                : ``;
+                ? `<button class="btn-entregar" onclick="marcarEntregado('${p.id}')">✔️ Entregado</button>` : ``;
 
-            let btnComandaHtml = `<button class="btn-print-comanda" onclick="imprimirComanda('${p.id}')">🖨️ Imprimir Comanda para Cocina</button>`;
+            // BOTÓN MÁGICO DE WHATSAPP
+            let btnWhatsappHtml = '';
+            if(p.telefono) {
+                let tlfLimpio = p.telefono.replace(/\D/g, ''); // Quita espacios o guiones
+                let mensajeWa = `¡Hola ${p.cliente}! Soy del Obrador Dulces y Postres 🧁. Te confirmo que tu pedido de ${p.cantidad}x ${p.producto} está anotado para el ${dE}/${mE}/${yE}. ¡Gracias por confiar en nosotros!`;
+                let urlWa = `https://wa.me/${tlfLimpio}?text=${encodeURIComponent(mensajeWa)}`;
+                btnWhatsappHtml = `<button class="btn-whatsapp" onclick="window.open('${urlWa}', '_blank')">💬 Enviar Confirmación por WhatsApp</button>`;
+            }
 
             contenedor.innerHTML += `
                 <div class="pedido-card">
@@ -597,100 +575,69 @@ async function cargarAgenda() {
                     <div class="pedido-detalles">
                         <div>
                             <div style="margin-bottom:6px; color:var(--text);"><strong>📅 Para el:</strong> ${dE}/${mE}/${yE}</div>
-                            <div style="color:var(--text);">Abonó: ${parseFloat(p.abono).toFixed(2)} € (${p.metodo_pago})</div>
+                            <div style="color:var(--text);">Abonó: ${parseFloat(p.abono).toFixed(2)} €</div>
                         </div>
                         <div style="text-align:right;">
                             <div style="margin-bottom:6px;">Total: <span style="font-weight:bold; color:var(--text); font-size:1.1rem;">${total.toFixed(2)} €</span></div>
                             ${estadoPagoHtml}
                         </div>
                     </div>
+                    ${btnWhatsappHtml}
                     ${btnAbonoHtml}
                     ${btnEntregarHtml}
-                    ${btnComandaHtml}
+                    <button class="btn-print-comanda" onclick="imprimirComanda('${p.id}')">🖨️ Ticket de Cocina</button>
                 </div>
             `;
         });
-    } catch (err) { contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error de red al cargar la agenda.</p>`; }
+    } catch (err) { contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error al cargar.</p>`; }
 }
 
 async function marcarEntregado(id) {
-    if(!confirm("¿Confirmar entrega al cliente?")) return;
+    if(!confirm("¿Confirmar entrega?")) return;
     try {
-        const { error } = await clienteSupabase
-            .from('pasteleria')
-            .update({ estado: 'Entregado' })
-            .eq('id', id)
-            .eq('user_id', usuarioActual.id);
-            
+        const { error } = await clienteSupabase.from('pasteleria').update({ estado: 'Entregado' }).eq('id', id).eq('user_id', usuarioActual.id);
         if (error) throw error;
         cargarAgenda(); 
-    } catch (err) { alert("Error al actualizar el pedido."); }
+    } catch (err) {}
 }
 
-// --- LOGICA: FINANZAS (AHORA MULTI-USUARIO) ---
 async function cargarFinanzas() {
     const contenedor = document.getElementById('resumen-finanzas');
     const fInicio = document.getElementById('filtro-inicio').value;
     const fFin = document.getElementById('filtro-fin').value;
-
     if(!usuarioActual) return;
-
-    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
+    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando...</p>';
 
     try {
-        let query = clienteSupabase.from('pasteleria').select('*').eq('user_id', usuarioActual.id); // <- SOLO SUS FINANZAS
-
-        if (fInicio) { query = query.gte('fecha_pedido', fInicio); }
-        if (fFin) { query = query.lte('fecha_pedido', fFin); }
+        let query = clienteSupabase.from('pasteleria').select('*').eq('user_id', usuarioActual.id);
+        if (fInicio) query = query.gte('fecha_pedido', fInicio);
+        if (fFin) query = query.lte('fecha_pedido', fFin);
 
         const { data, error } = await query;
         if (error) throw error;
 
-        let totalVendido = 0;
-        let totalCobrado = 0;
-        let totalFaltaCobrar = 0;
-
+        let totalVendido = 0; let totalCobrado = 0; let totalFalta = 0;
         data.forEach(p => {
             let totalPedido = p.precio * p.cantidad;
-            totalVendido += totalPedido;
-            totalCobrado += parseFloat(p.abono);
-            
-            if (p.abono < totalPedido) {
-                totalFaltaCobrar += (totalPedido - p.abono);
-            }
+            totalVendido += totalPedido; totalCobrado += parseFloat(p.abono);
+            if (p.abono < totalPedido) totalFalta += (totalPedido - p.abono);
         });
 
-        let textoPeriodo = "Histórico Completo";
-        if (fInicio || fFin) {
-            textoPeriodo = `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}`;
-        }
-
         contenedor.innerHTML = `
-            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
-                ${textoPeriodo}
-            </div>
             <div class="finanzas-card">
-                <h3>Total Ventas (Esperado)</h3>
+                <h3>Ventas (Esperado)</h3>
                 <div class="monto">${totalVendido.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p>
             </div>
-            
             <div class="finanzas-card">
-                <h3>Dinero Cobrado (Abonos)</h3>
+                <h3>Cobrado (En caja)</h3>
                 <div class="monto cobrado">${totalCobrado.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p>
             </div>
-
             <div class="finanzas-card">
-                <h3>Pendiente por Cobrar</h3>
-                <div class="monto pendiente">${totalFaltaCobrar.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p>
+                <h3>Pendiente (A cobrar)</h3>
+                <div class="monto pendiente">${totalFalta.toFixed(2)} €</div>
             </div>
         `;
-
-    } catch (err) {
-        contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error al calcular las finanzas.</p>`;
-    }
+    } catch (err) { contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error al calcular.</p>`; }
 }
 </script>
 </body>
