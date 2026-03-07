@@ -311,7 +311,7 @@
                 <label style="margin-bottom: 10px; color: var(--primary); font-weight: bold;">🔍 Filtrar Ventas por Fecha</label>
                 <div class="input-grid" style="margin-bottom: 10px;">
                     <div>
-                        <span style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 4px;">Desde (Día del pedido):</span>
+                        <span style="font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 4px;">Desde (Día pedido):</span>
                         <input type="date" id="filtro-inicio" style="margin-bottom: 0; padding: 10px;">
                     </div>
                     <div>
@@ -343,6 +343,7 @@ const SUPABASE_KEY = 'sb_publishable_aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh';
 const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let pedidosActuales = []; 
+let usuarioActual = null; // <- ESTA ES LA NUEVA VARIABLE MÁGICA
 
 document.addEventListener('DOMContentLoaded', () => {
     verificarSesion();
@@ -350,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     clienteSupabase.auth.onAuthStateChange((event, session) => {
         if (event === 'SIGNED_OUT' || !session) {
+            usuarioActual = null;
             document.getElementById('pantalla-login').classList.remove('hidden');
             document.getElementById('pantalla-app').classList.add('hidden');
         }
@@ -361,9 +363,12 @@ async function verificarSesion() {
     try {
         const { data: { session } } = await clienteSupabase.auth.getSession();
         if (session) {
+            usuarioActual = session.user; // Guardamos quién acaba de entrar
             document.getElementById('pantalla-login').classList.add('hidden');
             document.getElementById('pantalla-app').classList.remove('hidden');
+            cargarAgenda();
         } else {
+            usuarioActual = null;
             document.getElementById('pantalla-login').classList.remove('hidden');
             document.getElementById('pantalla-app').classList.add('hidden');
         }
@@ -380,9 +385,12 @@ async function iniciarSesion() {
     btn.innerText = 'Entrando...'; btn.disabled = true; err.style.display = 'none';
 
     try {
-        const { error } = await clienteSupabase.auth.signInWithPassword({ email, password });
+        const { error, data } = await clienteSupabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        document.getElementById('email').value = ''; document.getElementById('password').value = '';
+        
+        usuarioActual = data.user; // Registramos su identidad
+        document.getElementById('email').value = ''; 
+        document.getElementById('password').value = '';
         verificarSesion();
     } catch (e) {
         err.innerText = 'Credenciales incorrectas.'; err.style.display = 'block';
@@ -448,7 +456,7 @@ function imprimirAgenda() {
     document.body.classList.remove('modo-agenda');
 }
 
-// --- LOGICA: GUARDAR PEDIDO ---
+// --- LOGICA: GUARDAR PEDIDO (AHORA MULTI-USUARIO) ---
 async function guardarPedido() {
     const btn = document.getElementById('btn-guardar');
     const cliente = document.getElementById('in-cliente').value.trim();
@@ -464,11 +472,17 @@ async function guardarPedido() {
         alert("⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega.");
         return;
     }
+    
+    if(!usuarioActual) {
+        alert("Error de sesión. Por favor, recarga la página.");
+        return;
+    }
 
     btn.innerText = 'Guardando...'; btn.disabled = true;
 
     try {
         const { error } = await clienteSupabase.from('pasteleria').insert([{
+            user_id: usuarioActual.id, // <- ETIQUETA INVISIBLE PARA SABER DE QUIÉN ES EL PEDIDO
             cliente: cliente,
             producto: producto,
             cantidad: parseInt(cantidad),
@@ -515,7 +529,8 @@ async function agregarPago(id, abonoActual, falta) {
         const { error } = await clienteSupabase
             .from('pasteleria')
             .update({ abono: nuevoAbono })
-            .eq('id', id);
+            .eq('id', id)
+            .eq('user_id', usuarioActual.id); // Doble validación de seguridad
 
         if (error) throw error;
         mostrarAlerta("💰 ¡Pago registrado con éxito!");
@@ -525,13 +540,20 @@ async function agregarPago(id, abonoActual, falta) {
     }
 }
 
-// --- LOGICA: AGENDA ---
+// --- LOGICA: AGENDA (AHORA FILTRADA POR USUARIO) ---
 async function cargarAgenda() {
     const contenedor = document.getElementById('lista-pedidos');
+    if(!usuarioActual) return;
+    
     contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Actualizando agenda...</p>';
 
     try {
-        const { data, error } = await clienteSupabase.from('pasteleria').select('*').order('fecha_entrega', { ascending: true });
+        const { data, error } = await clienteSupabase
+            .from('pasteleria')
+            .select('*')
+            .eq('user_id', usuarioActual.id) // <- SOLO DESCARGA SUS PROPIOS PEDIDOS
+            .order('fecha_entrega', { ascending: true });
+            
         if (error) throw error;
 
         pedidosActuales = data; 
@@ -591,19 +613,33 @@ async function cargarAgenda() {
     } catch (err) { contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error de red al cargar la agenda.</p>`; }
 }
 
-// --- LOGICA: FINANZAS (AHORA CON FILTRO) ---
+async function marcarEntregado(id) {
+    if(!confirm("¿Confirmar entrega al cliente?")) return;
+    try {
+        const { error } = await clienteSupabase
+            .from('pasteleria')
+            .update({ estado: 'Entregado' })
+            .eq('id', id)
+            .eq('user_id', usuarioActual.id);
+            
+        if (error) throw error;
+        cargarAgenda(); 
+    } catch (err) { alert("Error al actualizar el pedido."); }
+}
+
+// --- LOGICA: FINANZAS (AHORA MULTI-USUARIO) ---
 async function cargarFinanzas() {
     const contenedor = document.getElementById('resumen-finanzas');
     const fInicio = document.getElementById('filtro-inicio').value;
     const fFin = document.getElementById('filtro-fin').value;
 
+    if(!usuarioActual) return;
+
     contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
 
     try {
-        // Preparamos la consulta a la base de datos
-        let query = clienteSupabase.from('pasteleria').select('*');
+        let query = clienteSupabase.from('pasteleria').select('*').eq('user_id', usuarioActual.id); // <- SOLO SUS FINANZAS
 
-        // Aplicamos los filtros de fecha si el usuario los ha rellenado
         if (fInicio) { query = query.gte('fecha_pedido', fInicio); }
         if (fFin) { query = query.lte('fecha_pedido', fFin); }
 
@@ -624,7 +660,6 @@ async function cargarFinanzas() {
             }
         });
 
-        // Mostramos si estamos viendo "Todo el histórico" o "Un periodo específico"
         let textoPeriodo = "Histórico Completo";
         if (fInicio || fFin) {
             textoPeriodo = `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}`;
