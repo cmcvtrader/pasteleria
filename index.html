@@ -102,6 +102,13 @@
             font-size: 0.85rem; transition: background 0.2s;
         }
         .btn-print-comanda:hover { background: #f1f5f9; }
+        .btn-whatsapp {
+            width: 100%; padding: 10px; background: #25D366; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            margin-top: 8px; font-size: 0.85rem; transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-whatsapp:hover { background: #128C7E; }
 
         /* TARJETAS DE PEDIDO */
         .pedido-card {
@@ -154,14 +161,37 @@
 
         .hidden { display: none !important; }
         
+        /* MODAL CUSTOM PARA PAGOS */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        
+        .modal-box {
+            background: var(--surface); padding: 30px; border-radius: 20px;
+            max-width: 350px; width: 90%; border: 2px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .modal-title { font-family: var(--serif); font-size: 1.5rem; color: var(--primary); margin-bottom: 15px; }
+        .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .btn-modal { padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; font-size: 0.95rem; }
+        .btn-modal-cancel { background: #f1f5f9; color: var(--text); }
+        .btn-modal-confirm { background: var(--primary); color: white; }
+
         #msg-alerta {
             display: none; padding: 14px; border-radius: 12px; text-align: center; margin-bottom: 18px; font-weight: 500;
             background: var(--secondary-light); color: var(--secondary-text); border: 2px solid var(--secondary);
         }
 
-        /* =========================================================
-           MAGIA DE IMPRESIÓN (CSS PRINT MEDIA)
-           ========================================================= */
+        /* LOADING SPINNER */
+        .spinner {
+            display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: white; animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* IMPRESIÓN */
         #ticket-impresion { display: none; }
 
         @media print {
@@ -200,9 +230,7 @@
     </div>
     <div class="ticket-divisor"></div>
     <p style="text-align: center; font-size: 1.2rem; font-weight: bold;" id="tk-fecha">ENTREGAR EL: 00/00/0000</p>
-    <div class="ticket-gigante" id="tk-producto">
-        1x Tarta de Chocolate
-    </div>
+    <div class="ticket-gigante" id="tk-producto">1x Tarta de Chocolate</div>
     <div class="ticket-divisor"></div>
     <div class="ticket-info">
         <p><strong>Cliente:</strong> <span id="tk-cliente">Nombre</span></p>
@@ -213,15 +241,28 @@
     <p style="text-align: center; font-size: 0.8rem; margin-top: 30px;">FIN DE COMANDA</p>
 </div>
 
+<div id="modal-pago" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title">💰 Registrar Pago</div>
+        <p id="modal-deuda-texto" style="margin-bottom: 15px; color: var(--muted);"></p>
+        <label>Cantidad que entrega ahora (€)</label>
+        <input type="number" id="modal-input-pago" step="0.50" placeholder="0.00">
+        <div class="modal-buttons">
+            <button class="btn-modal btn-modal-cancel" onclick="App.cerrarModal()">Cancelar</button>
+            <button class="btn-modal btn-modal-confirm" onclick="App.confirmarPago()">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <div id="pantalla-login" class="login-container">
     <div class="login-box">
         <span class="login-logo">🧁</span>
         <h2 class="login-title">Dulces y Postres</h2>
         <p class="login-sub">Obrador y Pedidos</p>
         <div id="login-error" style="display:none; color: var(--red-text); margin-bottom:15px; font-size:0.9rem; background: var(--red-light); padding: 10px; border-radius: 10px;"></div>
-        <input type="email" id="email" placeholder="Correo electrónico" onkeydown="if(event.key==='Enter') iniciarSesion()">
-        <input type="password" id="password" placeholder="Contraseña" onkeydown="if(event.key==='Enter') iniciarSesion()">
-        <button id="btn-login" class="btn-primary" onclick="iniciarSesion()">Entrar al Obrador</button>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button id="btn-login" class="btn-primary">Entrar al Obrador</button>
     </div>
 </div>
 
@@ -230,13 +271,15 @@
     <div id="view-nuevo">
         <div class="header">
             <span class="header-title">✨ Nuevo Pedido</span>
-            <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+            <button class="btn-logout" onclick="App.cerrarSesion()">Salir</button>
         </div>
         <div class="content">
             <div id="msg-alerta"></div>
 
             <label>Nombre del Cliente</label>
             <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez">
+            <label>WhatsApp del Cliente <span style="color:var(--muted);font-weight:400;font-size:0.8rem">(opcional, con prefijo país)</span></label>
+            <input type="tel" id="in-telefono" placeholder="Ej. 34612345678">
 
             <label>Producto o Tarta</label>
             <input type="text" id="in-producto" placeholder="Ej. Torta Tres Leches">
@@ -279,7 +322,7 @@
                 </div>
             </div>
 
-            <button id="btn-guardar" class="btn-primary" onclick="guardarPedido()" style="margin-top: 10px;">
+            <button id="btn-guardar" class="btn-primary" style="margin-top: 10px;">
                 Anotar Pedido
             </button>
         </div>
@@ -288,10 +331,10 @@
     <div id="view-agenda" class="hidden">
         <div class="header">
             <span class="header-title">📅 Agenda del Obrador</span>
-            <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+            <button class="btn-logout" onclick="App.cerrarSesion()">Salir</button>
         </div>
         <div class="content" style="padding-bottom: 40px;">
-            <button class="btn-primary" onclick="imprimirAgenda()" style="background: var(--text); margin-bottom: 20px;">
+            <button class="btn-primary" onclick="App.imprimirAgenda()" style="background: var(--text); margin-bottom: 20px;">
                 🖨️ Imprimir Agenda Completa
             </button>
             <div id="lista-pedidos">
@@ -303,7 +346,7 @@
     <div id="view-finanzas" class="hidden">
         <div class="header">
             <span class="header-title">💰 Balance y Pagos</span>
-            <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
+            <button class="btn-logout" onclick="App.cerrarSesion()">Salir</button>
         </div>
         <div class="content" style="padding-bottom: 40px;">
             
@@ -319,7 +362,7 @@
                         <input type="date" id="filtro-fin" style="margin-bottom: 0; padding: 10px;">
                     </div>
                 </div>
-                <button class="btn-primary" onclick="cargarFinanzas()" style="padding: 10px; font-size: 0.9rem;">Calcular Periodo</button>
+                <button class="btn-primary" onclick="App.cargarFinanzas()" style="padding: 10px; font-size: 0.9rem;">Calcular Periodo</button>
             </div>
 
             <div id="resumen-finanzas">
@@ -329,329 +372,582 @@
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="tab-nuevo" onclick="cambiarPestana('nuevo')">📝 Nuevo</div>
-        <div class="nav-item" id="tab-agenda" onclick="cambiarPestana('agenda')">📅 Agenda</div>
-        <div class="nav-item" id="tab-finanzas" onclick="cambiarPestana('finanzas')">💰 Finanzas</div>
+        <div class="nav-item active" id="tab-nuevo" onclick="App.cambiarPestana('nuevo')">📝 Nuevo</div>
+        <div class="nav-item" id="tab-agenda" onclick="App.cambiarPestana('agenda')">📅 Agenda</div>
+        <div class="nav-item" id="tab-finanzas" onclick="App.cambiarPestana('finanzas')">💰 Finanzas</div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// --- TUS CLAVES REALES DE SUPABASE ---
-const SUPABASE_URL = 'https://lvnnmddprjaettekxvfi.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh';
-const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ═══════════════════════════════════════════════════════════════════
+// CONFIGURACIÓN Y ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════════════
 
-let pedidosActuales = []; 
-let usuarioActual = null; // <- ESTA ES LA NUEVA VARIABLE MÁGICA
+const CONFIG = {
+    SUPABASE_URL: 'https://lvnnmddprjaettekxvfi.supabase.co',
+    SUPABASE_KEY: 'sb_publishable_aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh',
+    TABLE_NAME: 'pasteleria'
+};
 
-document.addEventListener('DOMContentLoaded', () => {
-    verificarSesion();
-    document.getElementById('in-fecha-pedido').value = new Date().toLocaleDateString('en-CA');
-    
-    clienteSupabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
-            usuarioActual = null;
-            document.getElementById('pantalla-login').classList.remove('hidden');
-            document.getElementById('pantalla-app').classList.add('hidden');
+const State = {
+    supabase: null,
+    usuario: null,
+    pedidos: [],
+    modalContext: null
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// UTILIDADES
+// ═══════════════════════════════════════════════════════════════════
+
+const Utils = {
+    // Formatear fecha YYYY-MM-DD a DD/MM/YYYY
+    formatearFecha(fechaISO) {
+        if (!fechaISO) return '';
+        const [y, m, d] = fechaISO.split('-');
+        return `${d}/${m}/${y}`;
+    },
+
+    // Obtener fecha actual en formato YYYY-MM-DD
+    obtenerFechaHoy() {
+        return new Date().toLocaleDateString('en-CA');
+    },
+
+    // Escapar HTML para prevenir XSS
+    escaparHTML(texto) {
+        const div = document.createElement('div');
+        div.textContent = texto;
+        return div.innerHTML;
+    },
+
+    // Validar número positivo
+    validarNumeroPositivo(valor) {
+        const num = parseFloat(valor);
+        return !isNaN(num) && num >= 0;
+    },
+
+    // Mostrar/ocultar elemento
+    toggle(id, mostrar) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.toggle('hidden', !mostrar);
         }
-    });
-});
+    },
 
-// --- AUTH ---
-async function verificarSesion() {
-    try {
-        const { data: { session } } = await clienteSupabase.auth.getSession();
-        if (session) {
-            usuarioActual = session.user; // Guardamos quién acaba de entrar
-            document.getElementById('pantalla-login').classList.add('hidden');
-            document.getElementById('pantalla-app').classList.remove('hidden');
-            cargarAgenda();
+    // Logging mejorado
+    log(tipo, mensaje, data = null) {
+        const timestamp = new Date().toISOString();
+        const prefix = `[${timestamp}] [${tipo.toUpperCase()}]`;
+        
+        if (tipo === 'error') {
+            console.error(prefix, mensaje, data || '');
         } else {
-            usuarioActual = null;
-            document.getElementById('pantalla-login').classList.remove('hidden');
-            document.getElementById('pantalla-app').classList.add('hidden');
+            console.log(prefix, mensaje, data || '');
         }
-    } catch (err) {}
-}
-
-async function iniciarSesion() {
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
-    const btn = document.getElementById('btn-login');
-    const err = document.getElementById('login-error');
-
-    if (!email || !password) return;
-    btn.innerText = 'Entrando...'; btn.disabled = true; err.style.display = 'none';
-
-    try {
-        const { error, data } = await clienteSupabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        
-        usuarioActual = data.user; // Registramos su identidad
-        document.getElementById('email').value = ''; 
-        document.getElementById('password').value = '';
-        verificarSesion();
-    } catch (e) {
-        err.innerText = 'Credenciales incorrectas.'; err.style.display = 'block';
-    } finally {
-        btn.innerText = 'Entrar al Obrador'; btn.disabled = false;
     }
-}
+};
 
-async function cerrarSesion() { 
-    await clienteSupabase.auth.signOut(); 
-    cambiarPestana('nuevo'); 
-}
+// ═══════════════════════════════════════════════════════════════════
+// CAPA DE DATOS (DATABASE)
+// ═══════════════════════════════════════════════════════════════════
 
-// --- NAVEGACIÓN ---
-function cambiarPestana(pestana) {
-    ['nuevo', 'agenda', 'finanzas'].forEach(p => {
-        document.getElementById('view-' + p).classList.add('hidden');
-        document.getElementById('tab-' + p).classList.remove('active');
-    });
+const DB = {
+    // Insertar nuevo pedido
+    async crearPedido(datos) {
+        try {
+            const { error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .insert([{
+                    user_id: State.usuario.id,
+                    ...datos,
+                    estado: 'Pendiente'
+                }]);
 
-    document.getElementById('view-' + pestana).classList.remove('hidden');
-    document.getElementById('tab-' + pestana).classList.add('active');
-    
-    if(pestana === 'agenda') cargarAgenda();
-    if(pestana === 'finanzas') cargarFinanzas();
-}
+            if (error) throw error;
+            Utils.log('info', 'Pedido creado exitosamente');
+            return { success: true };
+        } catch (err) {
+            Utils.log('error', 'Error al crear pedido', err);
+            return { success: false, error: err.message };
+        }
+    },
 
-function mostrarAlerta(texto) {
-    const msg = document.getElementById('msg-alerta');
-    msg.innerText = texto; msg.style.display = 'block';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => msg.style.display = 'none', 3500);
-}
+    // Obtener pedidos del usuario actual
+    async obtenerPedidos() {
+        try {
+            const { data, error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .select('*')
+                .eq('user_id', State.usuario.id)
+                .order('fecha_entrega', { ascending: true });
 
-// --- LÓGICA DE IMPRESIÓN ---
-function imprimirComanda(idPedido) {
-    const p = pedidosActuales.find(x => x.id == idPedido);
-    if(!p) return;
+            if (error) throw error;
+            Utils.log('info', `Pedidos cargados: ${data.length}`);
+            return { success: true, data };
+        } catch (err) {
+            Utils.log('error', 'Error al obtener pedidos', err);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
 
-    let [yE, mE, dE] = p.fecha_entrega.split('-');
-    let total = p.precio * p.cantidad;
-    let resta = total - p.abono;
+    // Actualizar estado de pedido
+    async actualizarEstado(id, nuevoEstado) {
+        try {
+            const { error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .update({ estado: nuevoEstado })
+                .eq('id', id)
+                .eq('user_id', State.usuario.id);
 
-    document.getElementById('tk-fecha').innerText = `ENTREGAR EL: ${dE}/${mE}/${yE}`;
-    document.getElementById('tk-producto').innerText = `${p.cantidad}x ${p.producto}`;
-    document.getElementById('tk-cliente').innerText = p.cliente;
-    document.getElementById('tk-total').innerText = `${total.toFixed(2)} €`;
-    
-    if(resta > 0) {
-        document.getElementById('tk-pago').innerText = `DEBE ${resta.toFixed(2)} € (Abonó ${p.abono}€)`;
-    } else {
-        document.getElementById('tk-pago').innerText = `✅ PAGADO COMPLETO`;
-    }
+            if (error) throw error;
+            Utils.log('info', `Estado actualizado: ${nuevoEstado}`);
+            return { success: true };
+        } catch (err) {
+            Utils.log('error', 'Error al actualizar estado', err);
+            return { success: false, error: err.message };
+        }
+    },
 
-    document.body.classList.add('modo-ticket');
-    window.print();
-    document.body.classList.remove('modo-ticket');
-}
+    // Actualizar abono
+    async actualizarAbono(id, nuevoAbono) {
+        try {
+            const { error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .update({ abono: nuevoAbono })
+                .eq('id', id)
+                .eq('user_id', State.usuario.id);
 
-function imprimirAgenda() {
-    document.body.classList.add('modo-agenda');
-    window.print();
-    document.body.classList.remove('modo-agenda');
-}
+            if (error) throw error;
+            Utils.log('info', `Abono actualizado: ${nuevoAbono}`);
+            return { success: true };
+        } catch (err) {
+            Utils.log('error', 'Error al actualizar abono', err);
+            return { success: false, error: err.message };
+        }
+    },
 
-// --- LOGICA: GUARDAR PEDIDO (AHORA MULTI-USUARIO) ---
-async function guardarPedido() {
-    const btn = document.getElementById('btn-guardar');
-    const cliente = document.getElementById('in-cliente').value.trim();
-    const producto = document.getElementById('in-producto').value.trim();
-    const cantidad = document.getElementById('in-cantidad').value;
-    const precio = document.getElementById('in-precio').value;
-    const abono = document.getElementById('in-abono').value;
-    const metodo = document.getElementById('in-metodo').value;
-    const fPedido = document.getElementById('in-fecha-pedido').value;
-    const fEntrega = document.getElementById('in-fecha-entrega').value;
+    // Obtener pedidos con filtro de fecha
+    async obtenerPedidosFiltrados(fechaInicio, fechaFin) {
+        try {
+            let query = State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .select('*')
+                .eq('user_id', State.usuario.id);
 
-    if(!cliente || !producto || !precio || !fEntrega || !cantidad) {
-        alert("⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega.");
-        return;
-    }
-    
-    if(!usuarioActual) {
-        alert("Error de sesión. Por favor, recarga la página.");
-        return;
-    }
+            if (fechaInicio) {
+                query = query.gte('fecha_pedido', fechaInicio);
+            }
+            if (fechaFin) {
+                query = query.lte('fecha_pedido', fechaFin);
+            }
 
-    btn.innerText = 'Guardando...'; btn.disabled = true;
-
-    try {
-        const { error } = await clienteSupabase.from('pasteleria').insert([{
-            user_id: usuarioActual.id, // <- ETIQUETA INVISIBLE PARA SABER DE QUIÉN ES EL PEDIDO
-            cliente: cliente,
-            producto: producto,
-            cantidad: parseInt(cantidad),
-            precio: parseFloat(precio),
-            abono: parseFloat(abono) || 0,
-            metodo_pago: metodo,
-            fecha_pedido: fPedido,
-            fecha_entrega: fEntrega,
-            estado: 'Pendiente'
-        }]);
-
-        if (error) throw error;
-        
-        mostrarAlerta("✨ ¡Pedido guardado con éxito!");
-        
-        document.getElementById('in-cliente').value = '';
-        document.getElementById('in-producto').value = '';
-        document.getElementById('in-precio').value = '';
-        document.getElementById('in-abono').value = '0';
-        document.getElementById('in-cantidad').value = '1';
-        document.getElementById('in-metodo').value = 'Bizum';
-        
-    } catch (err) {
-        alert("Error: " + err.message);
-    } finally {
-        btn.innerText = 'Anotar Pedido'; btn.disabled = false;
-    }
-}
-
-// --- LOGICA: ACTUALIZAR ABONO / PAGO ---
-async function agregarPago(id, abonoActual, falta) {
-    let inputStr = prompt(`El cliente aún debe: ${falta.toFixed(2)} €\n\n¿Cuánto dinero está entregando en este momento?`, falta.toFixed(2));
-    if (inputStr === null || inputStr.trim() === '') return; 
-    
-    let montoAdd = parseFloat(inputStr.replace(',', '.'));
-    if (isNaN(montoAdd) || montoAdd <= 0) {
-        alert("⚠️ Por favor ingresa una cantidad válida mayor a 0.");
-        return;
-    }
-
-    let nuevoAbono = parseFloat(abonoActual) + montoAdd;
-
-    try {
-        const { error } = await clienteSupabase
-            .from('pasteleria')
-            .update({ abono: nuevoAbono })
-            .eq('id', id)
-            .eq('user_id', usuarioActual.id); // Doble validación de seguridad
-
-        if (error) throw error;
-        mostrarAlerta("💰 ¡Pago registrado con éxito!");
-        cargarAgenda(); 
-    } catch (err) {
-        alert("Error al actualizar el pago: " + err.message);
-    }
-}
-
-// --- LOGICA: AGENDA (AHORA FILTRADA POR USUARIO) ---
-async function cargarAgenda() {
-    const contenedor = document.getElementById('lista-pedidos');
-    if(!usuarioActual) return;
-    
-    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Actualizando agenda...</p>';
-
-    try {
-        const { data, error } = await clienteSupabase
-            .from('pasteleria')
-            .select('*')
-            .eq('user_id', usuarioActual.id) // <- SOLO DESCARGA SUS PROPIOS PEDIDOS
-            .order('fecha_entrega', { ascending: true });
+            const { data, error } = await query;
+            if (error) throw error;
             
-        if (error) throw error;
+            Utils.log('info', `Pedidos filtrados: ${data.length}`);
+            return { success: true, data };
+        } catch (err) {
+            Utils.log('error', 'Error al filtrar pedidos', err);
+            return { success: false, error: err.message, data: [] };
+        }
+    }
+};
 
-        pedidosActuales = data; 
+// ═══════════════════════════════════════════════════════════════════
+// UI - COMPONENTES DE RENDERIZADO
+// ═══════════════════════════════════════════════════════════════════
 
-        if (data.length === 0) {
-            contenedor.innerHTML = '<div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨</div>';
+const UI = {
+    // Renderizar tarjeta de pedido
+    renderizarPedido(pedido) {
+        const total = pedido.precio * pedido.cantidad;
+        const resta = total - pedido.abono;
+        const esPendiente = pedido.estado === 'Pendiente';
+        
+        const badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
+        
+        const estadoPago = resta > 0
+            ? `<span class="pago-status pago-debe">Falta cobrar: ${resta.toFixed(2)} €</span>`
+            : `<span class="pago-status pago-pagado">Pagado Totalmente</span>`;
+
+        const btnAbono = resta > 0
+            ? `<button class="btn-print-comanda" style="background: var(--accent-light); color: var(--accent-text); border-color: var(--accent);" onclick="App.mostrarModalPago('${pedido.id}', ${pedido.abono}, ${resta})">💳 Registrar Pago / Abono</button>`
+            : '';
+
+        const btnEntregar = esPendiente
+            ? `<button class="btn-entregar" onclick="App.marcarEntregado('${pedido.id}')">✔️ Marcar Entregado</button>`
+            : '';
+
+        return `
+            <div class="pedido-card">
+                <div class="pedido-header">
+                    <span class="pedido-cliente">👤 ${Utils.escaparHTML(pedido.cliente)}</span>
+                    <span class="badge ${badgeClass}">${pedido.estado}</span>
+                </div>
+                <div class="pedido-producto">🧁 <strong>${pedido.cantidad}x</strong> ${Utils.escaparHTML(pedido.producto)}</div>
+                
+                <div class="pedido-detalles">
+                    <div>
+                        <div style="margin-bottom:6px; color:var(--text);"><strong>📅 Para el:</strong> ${Utils.formatearFecha(pedido.fecha_entrega)}</div>
+                        <div style="color:var(--text);">Abonó: ${parseFloat(pedido.abono).toFixed(2)} € (${pedido.metodo_pago})</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="margin-bottom:6px;">Total: <span style="font-weight:bold; color:var(--text); font-size:1.1rem;">${total.toFixed(2)} €</span></div>
+                        ${estadoPago}
+                    </div>
+                </div>
+                ${btnAbono}
+                ${btnEntregar}
+                <button class="btn-print-comanda" onclick="App.imprimirComanda('${pedido.id}')">🖨️ Imprimir Comanda para Cocina</button>
+            ${pedido.telefono ? `<button class="btn-whatsapp" onclick="App.enviarWhatsApp('${pedido.id}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                Enviar por WhatsApp
+            </button>` : ''}
+            </div>
+        `;
+    },
+
+    // Renderizar vista vacía
+    renderizarVacio(mensaje, icono = '🧁') {
+        return `
+            <div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">${icono}</div>
+                ${mensaje}
+            </div>
+        `;
+    },
+
+    // Renderizar tarjetas de finanzas
+    renderizarFinanzas(total, cobrado, pendiente, periodo = 'Histórico Completo') {
+        return `
+            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
+                ${periodo}
+            </div>
+            <div class="finanzas-card">
+                <h3>Total Ventas (Esperado)</h3>
+                <div class="monto">${total.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p>
+            </div>
+            
+            <div class="finanzas-card">
+                <h3>Dinero Cobrado (Abonos)</h3>
+                <div class="monto cobrado">${cobrado.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p>
+            </div>
+
+            <div class="finanzas-card">
+                <h3>Pendiente por Cobrar</h3>
+                <div class="monto pendiente">${pendiente.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p>
+            </div>
+        `;
+    },
+
+    // Mostrar mensaje de alerta
+    mostrarAlerta(texto) {
+        const msg = document.getElementById('msg-alerta');
+        msg.textContent = texto;
+        msg.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => msg.style.display = 'none', 3500);
+    },
+
+    // Mostrar error de login
+    mostrarErrorLogin(texto) {
+        const err = document.getElementById('login-error');
+        err.textContent = texto;
+        err.style.display = 'block';
+    },
+
+    ocultarErrorLogin() {
+        document.getElementById('login-error').style.display = 'none';
+    },
+
+    // Cambiar texto de botón con loading
+    setBotonLoading(idBoton, loading, textoOriginal, textoLoading) {
+        const btn = document.getElementById(idBoton);
+        if (loading) {
+            btn.innerHTML = `<span class="spinner"></span> ${textoLoading}`;
+            btn.disabled = true;
+        } else {
+            btn.textContent = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// LÓGICA DE APLICACIÓN PRINCIPAL
+// ═══════════════════════════════════════════════════════════════════
+
+const App = {
+    // Inicializar aplicación
+    async init() {
+        Utils.log('info', 'Inicializando aplicación...');
+        
+        State.supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+        
+        // Configurar fecha por defecto
+        document.getElementById('in-fecha-pedido').value = Utils.obtenerFechaHoy();
+        
+        // Event listeners
+        this.configurarEventos();
+        
+        // Verificar sesión inicial
+        await this.verificarSesion();
+        
+        // Listener de cambios de auth
+        State.supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT' || !session) {
+                State.usuario = null;
+                Utils.toggle('pantalla-login', true);
+                Utils.toggle('pantalla-app', false);
+            }
+        });
+    },
+
+    // Configurar event listeners
+    configurarEventos() {
+        // Login con Enter
+        document.getElementById('email').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.iniciarSesion();
+        });
+        document.getElementById('password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.iniciarSesion();
+        });
+
+        // Botón login
+        document.getElementById('btn-login').addEventListener('click', () => this.iniciarSesion());
+        
+        // Botón guardar pedido
+        document.getElementById('btn-guardar').addEventListener('click', () => this.guardarPedido());
+    },
+
+    // Verificar sesión activa
+    async verificarSesion() {
+        try {
+            const { data: { session } } = await State.supabase.auth.getSession();
+            
+            if (session) {
+                State.usuario = session.user;
+                Utils.toggle('pantalla-login', false);
+                Utils.toggle('pantalla-app', true);
+                await this.cargarAgenda();
+                Utils.log('info', `Sesión activa: ${session.user.email}`);
+            } else {
+                Utils.toggle('pantalla-login', true);
+                Utils.toggle('pantalla-app', false);
+            }
+        } catch (err) {
+            Utils.log('error', 'Error al verificar sesión', err);
+        }
+    },
+
+    // Iniciar sesión
+    async iniciarSesion() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!email || !password) {
+            UI.mostrarErrorLogin('Por favor completa ambos campos');
             return;
         }
 
-        contenedor.innerHTML = '';
-        
-        data.forEach(p => {
-            let [yE, mE, dE] = p.fecha_entrega.split('-');
-            let esPendiente = p.estado === 'Pendiente';
-            let badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
+        UI.ocultarErrorLogin();
+        UI.setBotonLoading('btn-login', true, 'Entrar al Obrador', 'Entrando...');
+
+        try {
+            const { error, data } = await State.supabase.auth.signInWithPassword({ email, password });
             
-            let total = p.precio * p.cantidad;
-            let resta = total - p.abono;
-            let estadoPagoHtml = resta > 0 
-                ? `<span class="pago-status pago-debe">Falta cobrar: ${resta.toFixed(2)} €</span>` 
-                : `<span class="pago-status pago-pagado">Pagado Totalmente</span>`;
+            if (error) throw error;
 
-            let btnAbonoHtml = resta > 0 
-                ? `<button class="btn-print-comanda" style="background: var(--accent-light); color: var(--accent-text); border-color: var(--accent);" onclick="agregarPago('${p.id}', ${p.abono}, ${resta})">💳 Registrar Pago / Abono</button>` 
-                : ``;
+            State.usuario = data.user;
+            document.getElementById('email').value = '';
+            document.getElementById('password').value = '';
+            
+            await this.verificarSesion();
+        } catch (err) {
+            UI.mostrarErrorLogin('Credenciales incorrectas');
+            Utils.log('error', 'Error de login', err);
+        } finally {
+            UI.setBotonLoading('btn-login', false, 'Entrar al Obrador', 'Entrando...');
+        }
+    },
 
-            let btnEntregarHtml = esPendiente 
-                ? `<button class="btn-entregar" onclick="marcarEntregado('${p.id}')">✔️ Marcar Entregado</button>` 
-                : ``;
+    // Cerrar sesión
+    async cerrarSesion() {
+        await State.supabase.auth.signOut();
+        this.cambiarPestana('nuevo');
+        Utils.log('info', 'Sesión cerrada');
+    },
 
-            let btnComandaHtml = `<button class="btn-print-comanda" onclick="imprimirComanda('${p.id}')">🖨️ Imprimir Comanda para Cocina</button>`;
-
-            contenedor.innerHTML += `
-                <div class="pedido-card">
-                    <div class="pedido-header">
-                        <span class="pedido-cliente">👤 ${p.cliente}</span>
-                        <span class="badge ${badgeClass}">${p.estado}</span>
-                    </div>
-                    <div class="pedido-producto">🧁 <strong>${p.cantidad}x</strong> ${p.producto}</div>
-                    
-                    <div class="pedido-detalles">
-                        <div>
-                            <div style="margin-bottom:6px; color:var(--text);"><strong>📅 Para el:</strong> ${dE}/${mE}/${yE}</div>
-                            <div style="color:var(--text);">Abonó: ${parseFloat(p.abono).toFixed(2)} € (${p.metodo_pago})</div>
-                        </div>
-                        <div style="text-align:right;">
-                            <div style="margin-bottom:6px;">Total: <span style="font-weight:bold; color:var(--text); font-size:1.1rem;">${total.toFixed(2)} €</span></div>
-                            ${estadoPagoHtml}
-                        </div>
-                    </div>
-                    ${btnAbonoHtml}
-                    ${btnEntregarHtml}
-                    ${btnComandaHtml}
-                </div>
-            `;
+    // Cambiar entre pestañas
+    cambiarPestana(pestana) {
+        ['nuevo', 'agenda', 'finanzas'].forEach(p => {
+            Utils.toggle('view-' + p, p === pestana);
+            document.getElementById('tab-' + p).classList.toggle('active', p === pestana);
         });
-    } catch (err) { contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error de red al cargar la agenda.</p>`; }
-}
 
-async function marcarEntregado(id) {
-    if(!confirm("¿Confirmar entrega al cliente?")) return;
-    try {
-        const { error } = await clienteSupabase
-            .from('pasteleria')
-            .update({ estado: 'Entregado' })
-            .eq('id', id)
-            .eq('user_id', usuarioActual.id);
+        if (pestana === 'agenda') this.cargarAgenda();
+        if (pestana === 'finanzas') this.cargarFinanzas();
+    },
+
+    // Guardar nuevo pedido
+    async guardarPedido() {
+        const datos = {
+            cliente: document.getElementById('in-cliente').value.trim(),
+            producto: document.getElementById('in-producto').value.trim(),
+            cantidad: parseInt(document.getElementById('in-cantidad').value),
+            precio: parseFloat(document.getElementById('in-precio').value),
+            abono: parseFloat(document.getElementById('in-abono').value) || 0,
+            metodo_pago: document.getElementById('in-metodo').value,
+            telefono: document.getElementById('in-telefono').value.trim().replace(/\D/g, '') || null,
+            fecha_pedido: document.getElementById('in-fecha-pedido').value,
+            fecha_entrega: document.getElementById('in-fecha-entrega').value
+        };
+
+        // Validaciones
+        if (!datos.cliente || !datos.producto || !datos.precio || !datos.fecha_entrega || !datos.cantidad) {
+            UI.mostrarAlerta('⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega');
+            return;
+        }
+
+        if (!Utils.validarNumeroPositivo(datos.precio) || !Utils.validarNumeroPositivo(datos.abono)) {
+            UI.mostrarAlerta('⚠️ Los valores numéricos deben ser positivos');
+            return;
+        }
+
+        if (!State.usuario) {
+            UI.mostrarAlerta('⚠️ Error de sesión. Recarga la página');
+            return;
+        }
+
+        UI.setBotonLoading('btn-guardar', true, 'Anotar Pedido', 'Guardando...');
+
+        const resultado = await DB.crearPedido(datos);
+
+        if (resultado.success) {
+            UI.mostrarAlerta('✨ ¡Pedido guardado con éxito!');
             
-        if (error) throw error;
-        cargarAgenda(); 
-    } catch (err) { alert("Error al actualizar el pedido."); }
-}
+            // Limpiar formulario
+            document.getElementById('in-cliente').value = '';
+            document.getElementById('in-producto').value = '';
+            document.getElementById('in-precio').value = '';
+            document.getElementById('in-abono').value = '0';
+            document.getElementById('in-cantidad').value = '1';
+            document.getElementById('in-telefono').value = '';
+            document.getElementById('in-metodo').value = 'Bizum';
+        } else {
+            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+        }
 
-// --- LOGICA: FINANZAS (AHORA MULTI-USUARIO) ---
-async function cargarFinanzas() {
-    const contenedor = document.getElementById('resumen-finanzas');
-    const fInicio = document.getElementById('filtro-inicio').value;
-    const fFin = document.getElementById('filtro-fin').value;
+        UI.setBotonLoading('btn-guardar', false, 'Anotar Pedido', 'Guardando...');
+    },
 
-    if(!usuarioActual) return;
+    // Cargar agenda de pedidos
+    async cargarAgenda() {
+        if (!State.usuario) return;
 
-    contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
+        const contenedor = document.getElementById('lista-pedidos');
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted); padding:20px;">Cargando pedidos...</p>';
 
-    try {
-        let query = clienteSupabase.from('pasteleria').select('*').eq('user_id', usuarioActual.id); // <- SOLO SUS FINANZAS
+        const resultado = await DB.obtenerPedidos();
 
-        if (fInicio) { query = query.gte('fecha_pedido', fInicio); }
-        if (fFin) { query = query.lte('fecha_pedido', fFin); }
+        if (!resultado.success) {
+            contenedor.innerHTML = UI.renderizarVacio('Error de red al cargar la agenda', '⚠️');
+            return;
+        }
 
-        const { data, error } = await query;
-        if (error) throw error;
+        State.pedidos = resultado.data;
+
+        if (resultado.data.length === 0) {
+            contenedor.innerHTML = UI.renderizarVacio('No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨');
+            return;
+        }
+
+        contenedor.innerHTML = resultado.data.map(p => UI.renderizarPedido(p)).join('');
+    },
+
+    // Marcar pedido como entregado
+    async marcarEntregado(id) {
+        if (!confirm('¿Confirmar entrega al cliente?')) return;
+
+        const resultado = await DB.actualizarEstado(id, 'Entregado');
+
+        if (resultado.success) {
+            await this.cargarAgenda();
+        } else {
+            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+        }
+    },
+
+    // Mostrar modal de pago
+    mostrarModalPago(id, abonoActual, falta) {
+        State.modalContext = { id, abonoActual, falta };
+        
+        document.getElementById('modal-deuda-texto').textContent = 
+            `El cliente aún debe: ${falta.toFixed(2)} €`;
+        document.getElementById('modal-input-pago').value = falta.toFixed(2);
+        document.getElementById('modal-pago').classList.add('active');
+        
+        setTimeout(() => document.getElementById('modal-input-pago').focus(), 100);
+    },
+
+    cerrarModal() {
+        document.getElementById('modal-pago').classList.remove('active');
+        State.modalContext = null;
+    },
+
+    // Confirmar pago desde modal
+    async confirmarPago() {
+        if (!State.modalContext) return;
+
+        const input = document.getElementById('modal-input-pago').value;
+        const montoAdd = parseFloat(input.replace(',', '.'));
+
+        if (isNaN(montoAdd) || montoAdd <= 0) {
+            alert('⚠️ Por favor ingresa una cantidad válida mayor a 0');
+            return;
+        }
+
+        const nuevoAbono = parseFloat(State.modalContext.abonoActual) + montoAdd;
+
+        const resultado = await DB.actualizarAbono(State.modalContext.id, nuevoAbono);
+
+        if (resultado.success) {
+            UI.mostrarAlerta('💰 ¡Pago registrado con éxito!');
+            await this.cargarAgenda();
+        } else {
+            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+        }
+
+        this.cerrarModal();
+    },
+
+    // Cargar finanzas
+    async cargarFinanzas() {
+        if (!State.usuario) return;
+
+        const contenedor = document.getElementById('resumen-finanzas');
+        const fInicio = document.getElementById('filtro-inicio').value;
+        const fFin = document.getElementById('filtro-fin').value;
+
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
+
+        const resultado = await DB.obtenerPedidosFiltrados(fInicio, fFin);
+
+        if (!resultado.success) {
+            contenedor.innerHTML = UI.renderizarVacio('Error al calcular las finanzas', '⚠️');
+            return;
+        }
 
         let totalVendido = 0;
         let totalCobrado = 0;
         let totalFaltaCobrar = 0;
 
-        data.forEach(p => {
-            let totalPedido = p.precio * p.cantidad;
+        resultado.data.forEach(p => {
+            const totalPedido = p.precio * p.cantidad;
             totalVendido += totalPedido;
             totalCobrado += parseFloat(p.abono);
             
@@ -660,38 +956,83 @@ async function cargarFinanzas() {
             }
         });
 
-        let textoPeriodo = "Histórico Completo";
+        let textoPeriodo = 'Histórico Completo';
         if (fInicio || fFin) {
             textoPeriodo = `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}`;
         }
 
-        contenedor.innerHTML = `
-            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
-                ${textoPeriodo}
-            </div>
-            <div class="finanzas-card">
-                <h3>Total Ventas (Esperado)</h3>
-                <div class="monto">${totalVendido.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p>
-            </div>
-            
-            <div class="finanzas-card">
-                <h3>Dinero Cobrado (Abonos)</h3>
-                <div class="monto cobrado">${totalCobrado.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p>
-            </div>
+        contenedor.innerHTML = UI.renderizarFinanzas(totalVendido, totalCobrado, totalFaltaCobrar, textoPeriodo);
+    },
 
-            <div class="finanzas-card">
-                <h3>Pendiente por Cobrar</h3>
-                <div class="monto pendiente">${totalFaltaCobrar.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p>
-            </div>
-        `;
+    // Imprimir comanda individual
+    enviarWhatsApp(idPedido) {
+        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
+        if (!pedido || !pedido.telefono) return;
 
-    } catch (err) {
-        contenedor.innerHTML = `<p style="color:var(--red-text); text-align:center;">Error al calcular las finanzas.</p>`;
+        const total = pedido.precio * pedido.cantidad;
+        const resta = total - pedido.abono;
+        const fechaEntrega = Utils.formatearFecha(pedido.fecha_entrega);
+        const fechaPedido = Utils.formatearFecha(pedido.fecha_pedido);
+
+        const pagoStatus = resta > 0
+            ? `*Pendiente por pagar*: ${resta.toFixed(2)}€*\n   (Abonado: ${parseFloat(pedido.abono).toFixed(2)}€)`
+            : `*PAGADO COMPLETAMENTE*`;
+
+        const msg = `*PEDIDO CONFIRMADO - Dulces y Postres*\n\n`
+            + `*Cliente*: ${pedido.cliente}\n`
+            + `*Producto*: ${pedido.cantidad}x ${pedido.producto}\n`
+            + `*Fecha pedido*: ${fechaPedido}\n`
+            + `*Fecha de entrega*: *${fechaEntrega}*\n`
+            + `*Total*: ${total.toFixed(2)}€\n`
+            + `${pagoStatus}\n`
+            + `*Método de pago*: ${pedido.metodo_pago}\n\n`
+            + `*¡Gracias por tu confianza! `;
+
+        const url = `https://wa.me/${pedido.telefono}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    },
+
+    imprimirComanda(idPedido) {
+        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
+        if (!pedido) return;
+
+        const total = pedido.precio * pedido.cantidad;
+        const resta = total - pedido.abono;
+
+        document.getElementById('tk-fecha').textContent = 
+            `ENTREGAR EL: ${Utils.formatearFecha(pedido.fecha_entrega)}`;
+        document.getElementById('tk-producto').textContent = 
+            `${pedido.cantidad}x ${pedido.producto}`;
+        document.getElementById('tk-cliente').textContent = pedido.cliente;
+        document.getElementById('tk-total').textContent = `${total.toFixed(2)} €`;
+        
+        if (resta > 0) {
+            document.getElementById('tk-pago').textContent = 
+                `DEBE ${resta.toFixed(2)} € (Abonó ${pedido.abono}€)`;
+        } else {
+            document.getElementById('tk-pago').textContent = '✅ PAGADO COMPLETO';
+        }
+
+        document.body.classList.add('modo-ticket');
+        window.print();
+        document.body.classList.remove('modo-ticket');
+    },
+
+    // Imprimir agenda completa
+    imprimirAgenda() {
+        document.body.classList.add('modo-agenda');
+        window.print();
+        document.body.classList.remove('modo-agenda');
     }
-}
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+});
 </script>
 </body>
 </html>
