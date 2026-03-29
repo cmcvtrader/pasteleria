@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dulces y Postres - Obrador</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f472b6">
+    <link rel="apple-touch-icon" href="icono-192.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
         :root {
+            /* PALETA PASTEL REPOSTERÍA (ORIGINAL) */
             --bg: #fff5f8;             
             --surface: #ffffff;        
             --border: #fce7f3;         
@@ -109,100 +116,6 @@
         }
         .btn-whatsapp:hover { background: #128C7E; }
 
-        /* SELECTOR DE CLIENTE CON CONTACTOS */
-        .cliente-selector-container {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .cliente-input-wrapper {
-            position: relative;
-            display: flex;
-            gap: 8px;
-        }
-
-        .cliente-input-wrapper input {
-            flex: 1;
-            margin-bottom: 0;
-        }
-
-        .btn-contactos {
-            padding: 14px 16px;
-            background: var(--accent-light);
-            border: 2px solid var(--accent);
-            border-radius: 12px;
-            color: var(--accent-text);
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-
-        .btn-contactos:active {
-            transform: scale(0.95);
-        }
-
-        .btn-contactos:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* DROPDOWN DE SUGERENCIAS */
-        .sugerencias-dropdown {
-            display: none;
-            position: absolute;
-            top: calc(100% + 5px);
-            left: 0;
-            right: 0;
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            z-index: 100;
-        }
-
-        .sugerencias-dropdown.active {
-            display: block;
-        }
-
-        .sugerencia-item {
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sugerencia-item:last-child {
-            border-bottom: none;
-        }
-
-        .sugerencia-item:hover {
-            background: var(--primary-light);
-        }
-
-        .sugerencia-icono {
-            font-size: 1.2rem;
-        }
-
-        .sugerencia-info {
-            flex: 1;
-        }
-
-        .sugerencia-nombre {
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .sugerencia-detalles {
-            font-size: 0.8rem;
-            color: var(--muted);
-        }
-
         /* TARJETAS DE PEDIDO */
         .pedido-card {
             background: var(--surface); border: 2px solid var(--border);
@@ -288,7 +201,7 @@
         #ticket-impresion { display: none; }
 
         @media print {
-            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .filtro-finanzas, .btn-contactos { display: none !important; }
+            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .btn-whatsapp, .filtro-finanzas { display: none !important; }
             body { background: white; color: black; }
             .app-container { box-shadow: none; border: none; max-width: 100%; padding-bottom: 0; }
             
@@ -312,35 +225,10 @@
             body.modo-agenda .badge { border: 1px solid #000; color: #000; }
             body.modo-agenda .pago-status { border: 1px solid #000; color: #000; }
         }
-
-        /* TOAST NOTIFICATION */
-        .toast {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--text);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 2000;
-            max-width: 80%;
-            text-align: center;
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
     </style>
 </head>
 <body>
 
-<!-- TICKET DE IMPRESIÓN -->
 <div id="ticket-impresion">
     <div class="ticket-header">
         <h1>DULCES Y POSTRES</h1>
@@ -359,7 +247,6 @@
     <p style="text-align: center; font-size: 0.8rem; margin-top: 30px;">FIN DE COMANDA</p>
 </div>
 
-<!-- MODAL PARA PAGOS -->
 <div id="modal-pago" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-title">💰 Registrar Pago</div>
@@ -373,10 +260,6 @@
     </div>
 </div>
 
-<!-- TOAST NOTIFICATION -->
-<div id="toast" class="toast"></div>
-
-<!-- PANTALLA DE LOGIN -->
 <div id="pantalla-login" class="login-container">
     <div class="login-box">
         <span class="login-logo">🧁</span>
@@ -389,10 +272,8 @@
     </div>
 </div>
 
-<!-- APLICACIÓN PRINCIPAL -->
 <div id="pantalla-app" class="app-container hidden">
 
-    <!-- VISTA: NUEVO PEDIDO -->
     <div id="view-nuevo">
         <div class="header">
             <span class="header-title">✨ Nuevo Pedido</span>
@@ -402,17 +283,8 @@
             <div id="msg-alerta"></div>
 
             <label>Nombre del Cliente</label>
-            <div class="cliente-selector-container">
-                <div class="cliente-input-wrapper">
-                    <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez" autocomplete="off">
-                    <button class="btn-contactos" id="btn-contactos" title="Elegir de contactos">
-                        📱
-                    </button>
-                </div>
-                <div class="sugerencias-dropdown" id="sugerencias-dropdown"></div>
-            </div>
-
-            <label>WhatsApp <span style="color:var(--muted);font-size:0.8rem;font-weight:400">(con prefijo país, ej: 34612345678)</span></label>
+            <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez">
+            <label>WhatsApp del Cliente <span style="color:var(--muted);font-weight:400;font-size:0.8rem">(opcional, con prefijo país)</span></label>
             <input type="tel" id="in-telefono" placeholder="Ej. 34612345678">
 
             <label>Producto o Tarta</label>
@@ -462,7 +334,6 @@
         </div>
     </div>
 
-    <!-- VISTA: AGENDA -->
     <div id="view-agenda" class="hidden">
         <div class="header">
             <span class="header-title">📅 Agenda del Obrador</span>
@@ -478,7 +349,6 @@
         </div>
     </div>
 
-    <!-- VISTA: FINANZAS -->
     <div id="view-finanzas" class="hidden">
         <div class="header">
             <span class="header-title">💰 Balance y Pagos</span>
@@ -507,7 +377,6 @@
         </div>
     </div>
 
-    <!-- NAVEGACIÓN -->
     <div class="nav-bar">
         <div class="nav-item active" id="tab-nuevo" onclick="App.cambiarPestana('nuevo')">📝 Nuevo</div>
         <div class="nav-item" id="tab-agenda" onclick="App.cambiarPestana('agenda')">📅 Agenda</div>
@@ -531,9 +400,7 @@ const State = {
     supabase: null,
     usuario: null,
     pedidos: [],
-    modalContext: null,
-    clientesFrecuentes: [],
-    contactPickerSupported: false
+    modalContext: null
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -564,140 +431,14 @@ const Utils = {
 
     toggle(id, mostrar) {
         const el = document.getElementById(id);
-        if (el) {
-            el.classList.toggle('hidden', !mostrar);
-        }
+        if (el) el.classList.toggle('hidden', !mostrar);
     },
 
     log(tipo, mensaje, data = null) {
         const timestamp = new Date().toISOString();
         const prefix = `[${timestamp}] [${tipo.toUpperCase()}]`;
-        
-        if (tipo === 'error') {
-            console.error(prefix, mensaje, data || '');
-        } else {
-            console.log(prefix, mensaje, data || '');
-        }
-    },
-
-    mostrarToast(mensaje, duracion = 3000) {
-        const toast = document.getElementById('toast');
-        toast.textContent = mensaje;
-        toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, duracion);
-    },
-
-    normalizarNombre(nombre) {
-        return nombre.trim().toLowerCase();
-    }
-};
-
-// ═══════════════════════════════════════════════════════════════════
-// GESTOR DE CONTACTOS
-// ═══════════════════════════════════════════════════════════════════
-
-const Contactos = {
-    // Verificar soporte de Contact Picker API
-    verificarSoporte() {
-        State.contactPickerSupported = 'contacts' in navigator && 'ContactsManager' in window;
-        Utils.log('info', `Contact Picker API soportada: ${State.contactPickerSupported}`);
-        return State.contactPickerSupported;
-    },
-
-    // Abrir selector de contactos del móvil
-    async abrirSelector() {
-        if (!State.contactPickerSupported) {
-            Utils.mostrarToast('⚠️ Tu navegador no soporta acceso a contactos');
-            Utils.log('warn', 'Contact Picker API no disponible');
-            return null;
-        }
-
-        try {
-            const props = ['name', 'tel'];
-            const opts = { multiple: false };
-
-            // Verificar propiedades disponibles
-            const supported = await navigator.contacts.getProperties();
-            Utils.log('info', 'Propiedades de contactos disponibles:', supported);
-
-            const contacts = await navigator.contacts.select(props, opts);
-            
-            if (contacts && contacts.length > 0) {
-                const contacto = contacts[0];
-                Utils.log('info', 'Contacto seleccionado:', contacto);
-                
-                return {
-                    nombre: contacto.name && contacto.name[0] ? contacto.name[0] : 'Sin nombre',
-                    telefono: contacto.tel && contacto.tel[0] ? contacto.tel[0] : null
-                };
-            }
-
-            return null;
-        } catch (err) {
-            if (err.name === 'AbortError') {
-                Utils.log('info', 'Usuario canceló la selección de contacto');
-            } else {
-                Utils.log('error', 'Error al acceder a contactos', err);
-                Utils.mostrarToast('⚠️ No se pudo acceder a los contactos');
-            }
-            return null;
-        }
-    },
-
-    // Obtener clientes frecuentes del histórico
-    async obtenerClientesFrecuentes() {
-        try {
-            const { data, error } = await State.supabase
-                .from(CONFIG.TABLE_NAME)
-                .select('cliente')
-                .eq('user_id', State.usuario.id);
-
-            if (error) throw error;
-
-            // Contar frecuencia de cada cliente
-            const frecuencia = {};
-            data.forEach(pedido => {
-                const nombreNormalizado = Utils.normalizarNombre(pedido.cliente);
-                frecuencia[nombreNormalizado] = (frecuencia[nombreNormalizado] || 0) + 1;
-            });
-
-            // Ordenar por frecuencia
-            const clientesOrdenados = Object.entries(frecuencia)
-                .map(([nombre, count]) => {
-                    // Encontrar la versión original del nombre (con mayúsculas)
-                    const pedidoOriginal = data.find(p => Utils.normalizarNombre(p.cliente) === nombre);
-                    return {
-                        nombre: pedidoOriginal.cliente,
-                        pedidos: count
-                    };
-                })
-                .sort((a, b) => b.pedidos - a.pedidos)
-                .slice(0, 10); // Top 10
-
-            State.clientesFrecuentes = clientesOrdenados;
-            Utils.log('info', `Clientes frecuentes cargados: ${clientesOrdenados.length}`);
-            
-            return clientesOrdenados;
-        } catch (err) {
-            Utils.log('error', 'Error al obtener clientes frecuentes', err);
-            return [];
-        }
-    },
-
-    // Filtrar clientes por búsqueda
-    filtrarClientes(termino) {
-        if (!termino || termino.length < 2) return [];
-
-        const terminoNormalizado = Utils.normalizarNombre(termino);
-        
-        return State.clientesFrecuentes
-            .filter(cliente => 
-                Utils.normalizarNombre(cliente.nombre).includes(terminoNormalizado)
-            )
-            .slice(0, 5);
+        if (tipo === 'error') console.error(prefix, mensaje, data || '');
+        else console.log(prefix, mensaje, data || '');
     }
 };
 
@@ -708,19 +449,14 @@ const Contactos = {
 const DB = {
     async crearPedido(datos) {
         try {
-            const { error } = await State.supabase
-                .from(CONFIG.TABLE_NAME)
-                .insert([{
-                    user_id: State.usuario.id,
-                    ...datos,
-                    estado: 'Pendiente'
-                }]);
-
+            const { error } = await State.supabase.from(CONFIG.TABLE_NAME).insert([{
+                user_id: State.usuario.id,
+                ...datos,
+                estado: 'Pendiente'
+            }]);
             if (error) throw error;
-            Utils.log('info', 'Pedido creado exitosamente');
             return { success: true };
         } catch (err) {
-            Utils.log('error', 'Error al crear pedido', err);
             return { success: false, error: err.message };
         }
     },
@@ -732,12 +468,9 @@ const DB = {
                 .select('*')
                 .eq('user_id', State.usuario.id)
                 .order('fecha_entrega', { ascending: true });
-
             if (error) throw error;
-            Utils.log('info', `Pedidos cargados: ${data.length}`);
             return { success: true, data };
         } catch (err) {
-            Utils.log('error', 'Error al obtener pedidos', err);
             return { success: false, error: err.message, data: [] };
         }
     },
@@ -749,12 +482,9 @@ const DB = {
                 .update({ estado: nuevoEstado })
                 .eq('id', id)
                 .eq('user_id', State.usuario.id);
-
             if (error) throw error;
-            Utils.log('info', `Estado actualizado: ${nuevoEstado}`);
             return { success: true };
         } catch (err) {
-            Utils.log('error', 'Error al actualizar estado', err);
             return { success: false, error: err.message };
         }
     },
@@ -766,37 +496,23 @@ const DB = {
                 .update({ abono: nuevoAbono })
                 .eq('id', id)
                 .eq('user_id', State.usuario.id);
-
             if (error) throw error;
-            Utils.log('info', `Abono actualizado: ${nuevoAbono}`);
             return { success: true };
         } catch (err) {
-            Utils.log('error', 'Error al actualizar abono', err);
             return { success: false, error: err.message };
         }
     },
 
     async obtenerPedidosFiltrados(fechaInicio, fechaFin) {
         try {
-            let query = State.supabase
-                .from(CONFIG.TABLE_NAME)
-                .select('*')
-                .eq('user_id', State.usuario.id);
-
-            if (fechaInicio) {
-                query = query.gte('fecha_pedido', fechaInicio);
-            }
-            if (fechaFin) {
-                query = query.lte('fecha_pedido', fechaFin);
-            }
-
+            let query = State.supabase.from(CONFIG.TABLE_NAME).select('*').eq('user_id', State.usuario.id);
+            if (fechaInicio) query = query.gte('fecha_pedido', fechaInicio);
+            if (fechaFin) query = query.lte('fecha_pedido', fechaFin);
+            
             const { data, error } = await query;
             if (error) throw error;
-            
-            Utils.log('info', `Pedidos filtrados: ${data.length}`);
             return { success: true, data };
         } catch (err) {
-            Utils.log('error', 'Error al filtrar pedidos', err);
             return { success: false, error: err.message, data: [] };
         }
     }
@@ -811,7 +527,6 @@ const UI = {
         const total = pedido.precio * pedido.cantidad;
         const resta = total - pedido.abono;
         const esPendiente = pedido.estado === 'Pendiente';
-        
         const badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
         
         const estadoPago = resta > 0
@@ -847,60 +562,25 @@ const UI = {
                 ${btnAbono}
                 ${btnEntregar}
                 <button class="btn-print-comanda" onclick="App.imprimirComanda('${pedido.id}')">🖨️ Imprimir Comanda para Cocina</button>
-                ${pedido.telefono ? `<button class="btn-whatsapp" onclick="App.enviarWhatsApp('${pedido.id}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                    Enviar por WhatsApp
-                </button>` : ''}
+            ${pedido.telefono ? `<button class="btn-whatsapp" onclick="App.enviarWhatsApp('${pedido.id}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                Enviar por WhatsApp
+            </button>` : ''}
             </div>
         `;
     },
 
     renderizarVacio(mensaje, icono = '🧁') {
-        return `
-            <div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">
-                <div style="font-size: 3rem; margin-bottom: 15px;">${icono}</div>
-                ${mensaje}
-            </div>
-        `;
+        return `<div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);"><div style="font-size: 3rem; margin-bottom: 15px;">${icono}</div>${mensaje}</div>`;
     },
 
     renderizarFinanzas(total, cobrado, pendiente, periodo = 'Histórico Completo') {
         return `
-            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
-                ${periodo}
-            </div>
-            <div class="finanzas-card">
-                <h3>Total Ventas (Esperado)</h3>
-                <div class="monto">${total.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p>
-            </div>
-            
-            <div class="finanzas-card">
-                <h3>Dinero Cobrado (Abonos)</h3>
-                <div class="monto cobrado">${cobrado.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p>
-            </div>
-
-            <div class="finanzas-card">
-                <h3>Pendiente por Cobrar</h3>
-                <div class="monto pendiente">${pendiente.toFixed(2)} €</div>
-                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p>
-            </div>
+            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">${periodo}</div>
+            <div class="finanzas-card"><h3>Total Ventas (Esperado)</h3><div class="monto">${total.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p></div>
+            <div class="finanzas-card"><h3>Dinero Cobrado (Abonos)</h3><div class="monto cobrado">${cobrado.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p></div>
+            <div class="finanzas-card"><h3>Pendiente por Cobrar</h3><div class="monto pendiente">${pendiente.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p></div>
         `;
-    },
-
-    renderizarSugerencias(clientes) {
-        if (clientes.length === 0) return '';
-
-        return clientes.map(cliente => `
-            <div class="sugerencia-item" onclick="App.seleccionarCliente('${Utils.escaparHTML(cliente.nombre).replace(/'/g, "\\'")}')">
-                <span class="sugerencia-icono">👤</span>
-                <div class="sugerencia-info">
-                    <div class="sugerencia-nombre">${Utils.escaparHTML(cliente.nombre)}</div>
-                    <div class="sugerencia-detalles">${cliente.pedidos} pedido${cliente.pedidos > 1 ? 's' : ''}</div>
-                </div>
-            </div>
-        `).join('');
     },
 
     mostrarAlerta(texto) {
@@ -930,17 +610,6 @@ const UI = {
             btn.textContent = textoOriginal;
             btn.disabled = false;
         }
-    },
-
-    mostrarSugerencias(clientes) {
-        const dropdown = document.getElementById('sugerencias-dropdown');
-        dropdown.innerHTML = this.renderizarSugerencias(clientes);
-        dropdown.classList.add('active');
-    },
-
-    ocultarSugerencias() {
-        const dropdown = document.getElementById('sugerencias-dropdown');
-        dropdown.classList.remove('active');
     }
 };
 
@@ -950,23 +619,10 @@ const UI = {
 
 const App = {
     async init() {
-        Utils.log('info', 'Inicializando aplicación...');
-        
         State.supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-        
-        // Verificar soporte de Contact Picker API
-        Contactos.verificarSoporte();
-        
-        // Configurar fecha por defecto
         document.getElementById('in-fecha-pedido').value = Utils.obtenerFechaHoy();
-        
-        // Event listeners
         this.configurarEventos();
-        
-        // Verificar sesión inicial
         await this.verificarSesion();
-        
-        // Listener de cambios de auth
         State.supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT' || !session) {
                 State.usuario = null;
@@ -977,99 +633,42 @@ const App = {
     },
 
     configurarEventos() {
-        // Login con Enter
-        document.getElementById('email').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.iniciarSesion();
-        });
-        document.getElementById('password').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.iniciarSesion();
-        });
-
-        // Botón login
+        document.getElementById('email').addEventListener('keydown', (e) => { if (e.key === 'Enter') this.iniciarSesion(); });
+        document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') this.iniciarSesion(); });
         document.getElementById('btn-login').addEventListener('click', () => this.iniciarSesion());
-        
-        // Botón guardar pedido
         document.getElementById('btn-guardar').addEventListener('click', () => this.guardarPedido());
-
-        // Botón de contactos
-        document.getElementById('btn-contactos').addEventListener('click', () => this.abrirContactos());
-
-        // Input de cliente con autocompletado
-        const inputCliente = document.getElementById('in-cliente');
-        
-        inputCliente.addEventListener('input', (e) => {
-            const termino = e.target.value;
-            if (termino.length >= 2) {
-                const clientes = Contactos.filtrarClientes(termino);
-                UI.mostrarSugerencias(clientes);
-            } else {
-                UI.ocultarSugerencias();
-            }
-        });
-
-        inputCliente.addEventListener('focus', async () => {
-            // Cargar clientes frecuentes si no están cargados
-            if (State.clientesFrecuentes.length === 0 && State.usuario) {
-                await Contactos.obtenerClientesFrecuentes();
-            }
-        });
-
-        // Cerrar sugerencias al hacer click fuera
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.cliente-selector-container')) {
-                UI.ocultarSugerencias();
-            }
-        });
     },
 
     async verificarSesion() {
         try {
             const { data: { session } } = await State.supabase.auth.getSession();
-            
             if (session) {
                 State.usuario = session.user;
                 Utils.toggle('pantalla-login', false);
                 Utils.toggle('pantalla-app', true);
-                
-                // Cargar clientes frecuentes (no bloquea si falla)
-                try { await Contactos.obtenerClientesFrecuentes(); } catch(e) { Utils.log('warn', 'Contactos frecuentes no disponibles', e); }
                 await this.cargarAgenda();
-                
-                Utils.log('info', `Sesión activa: ${session.user.email}`);
             } else {
                 Utils.toggle('pantalla-login', true);
                 Utils.toggle('pantalla-app', false);
             }
-        } catch (err) {
-            Utils.log('error', 'Error al verificar sesión', err);
-        }
+        } catch (err) { Utils.log('error', 'Error sesión', err); }
     },
 
     async iniciarSesion() {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-
-        if (!email || !password) {
-            UI.mostrarErrorLogin('Por favor completa ambos campos');
-            return;
-        }
-
+        if (!email || !password) return UI.mostrarErrorLogin('Completa ambos campos');
         UI.ocultarErrorLogin();
         UI.setBotonLoading('btn-login', true, 'Entrar al Obrador', 'Entrando...');
-
         try {
             const { error, data } = await State.supabase.auth.signInWithPassword({ email, password });
-            
             if (error) throw error;
-
             State.usuario = data.user;
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
-            
             await this.verificarSesion();
         } catch (err) {
             UI.mostrarErrorLogin('Credenciales incorrectas');
-            Utils.log('error', 'Error de login', err);
         } finally {
             UI.setBotonLoading('btn-login', false, 'Entrar al Obrador', 'Entrando...');
         }
@@ -1078,8 +677,6 @@ const App = {
     async cerrarSesion() {
         await State.supabase.auth.signOut();
         this.cambiarPestana('nuevo');
-        State.clientesFrecuentes = [];
-        Utils.log('info', 'Sesión cerrada');
     },
 
     cambiarPestana(pestana) {
@@ -1087,29 +684,8 @@ const App = {
             Utils.toggle('view-' + p, p === pestana);
             document.getElementById('tab-' + p).classList.toggle('active', p === pestana);
         });
-
         if (pestana === 'agenda') this.cargarAgenda();
         if (pestana === 'finanzas') this.cargarFinanzas();
-    },
-
-    async abrirContactos() {
-        const contacto = await Contactos.abrirSelector();
-        
-        if (contacto) {
-            document.getElementById('in-cliente').value = contacto.nombre;
-            if (contacto.telefono) {
-                const telLimpio = contacto.telefono.replace(/[\s\-\(\)\+]/g, '');
-                document.getElementById('in-telefono').value = telLimpio;
-            }
-            Utils.mostrarToast(`✅ ${contacto.nombre}${contacto.telefono ? ' · ' + contacto.telefono : ''}`);
-            UI.ocultarSugerencias();
-        }
-    },
-
-    seleccionarCliente(nombre) {
-        document.getElementById('in-cliente').value = nombre;
-        UI.ocultarSugerencias();
-        Utils.mostrarToast(`✅ Cliente seleccionado: ${nombre}`);
     },
 
     async guardarPedido() {
@@ -1120,99 +696,58 @@ const App = {
             precio: parseFloat(document.getElementById('in-precio').value),
             abono: parseFloat(document.getElementById('in-abono').value) || 0,
             metodo_pago: document.getElementById('in-metodo').value,
+            telefono: document.getElementById('in-telefono').value.trim().replace(/\D/g, '') || null,
             fecha_pedido: document.getElementById('in-fecha-pedido').value,
-            fecha_entrega: document.getElementById('in-fecha-entrega').value,
-            telefono: (() => {
-                let t = document.getElementById('in-telefono').value.trim().replace(/[\s\-\(\)\+]/g, '');
-                if (t && !t.startsWith('34') && t.length <= 9) t = '34' + t;
-                return t || null;
-            })()
+            fecha_entrega: document.getElementById('in-fecha-entrega').value
         };
 
-        // Validaciones
-        if (!datos.cliente || !datos.producto || !datos.precio || !datos.fecha_entrega || !datos.cantidad) {
-            UI.mostrarAlerta('⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega');
-            return;
-        }
-
-        if (!Utils.validarNumeroPositivo(datos.precio) || !Utils.validarNumeroPositivo(datos.abono)) {
-            UI.mostrarAlerta('⚠️ Los valores numéricos deben ser positivos');
-            return;
-        }
-
-        if (!State.usuario) {
-            UI.mostrarAlerta('⚠️ Error de sesión. Recarga la página');
-            return;
-        }
+        if (!datos.cliente || !datos.producto || !datos.precio || !datos.fecha_entrega || !datos.cantidad) return UI.mostrarAlerta('⚠️ Completa campos clave');
+        if (!Utils.validarNumeroPositivo(datos.precio) || !Utils.validarNumeroPositivo(datos.abono)) return UI.mostrarAlerta('⚠️ Valores positivos por favor');
+        if (!State.usuario) return UI.mostrarAlerta('⚠️ Error de sesión');
 
         UI.setBotonLoading('btn-guardar', true, 'Anotar Pedido', 'Guardando...');
-
         const resultado = await DB.crearPedido(datos);
 
         if (resultado.success) {
-            UI.mostrarAlerta('✨ ¡Pedido guardado con éxito!');
-            
-            // Limpiar formulario
+            UI.mostrarAlerta('✨ ¡Pedido guardado!');
             document.getElementById('in-cliente').value = '';
-            document.getElementById('in-telefono').value = '';
             document.getElementById('in-producto').value = '';
             document.getElementById('in-precio').value = '';
             document.getElementById('in-abono').value = '0';
             document.getElementById('in-cantidad').value = '1';
+            document.getElementById('in-telefono').value = '';
             document.getElementById('in-metodo').value = 'Bizum';
-            
-            // Recargar clientes frecuentes
-            await Contactos.obtenerClientesFrecuentes();
         } else {
             UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
         }
-
         UI.setBotonLoading('btn-guardar', false, 'Anotar Pedido', 'Guardando...');
     },
 
     async cargarAgenda() {
         if (!State.usuario) return;
-
         const contenedor = document.getElementById('lista-pedidos');
-        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Actualizando agenda...</p>';
-
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Cargando...</p>';
         const resultado = await DB.obtenerPedidos();
 
-        if (!resultado.success) {
-            contenedor.innerHTML = UI.renderizarVacio('Error de red al cargar la agenda', '⚠️');
-            return;
-        }
-
+        if (!resultado.success) return contenedor.innerHTML = UI.renderizarVacio('Error de red', '⚠️');
         State.pedidos = resultado.data;
 
-        if (resultado.data.length === 0) {
-            contenedor.innerHTML = UI.renderizarVacio('No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨');
-            return;
-        }
-
+        if (resultado.data.length === 0) return contenedor.innerHTML = UI.renderizarVacio('No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨');
         contenedor.innerHTML = resultado.data.map(p => UI.renderizarPedido(p)).join('');
     },
 
     async marcarEntregado(id) {
         if (!confirm('¿Confirmar entrega al cliente?')) return;
-
         const resultado = await DB.actualizarEstado(id, 'Entregado');
-
-        if (resultado.success) {
-            await this.cargarAgenda();
-        } else {
-            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
-        }
+        if (resultado.success) await this.cargarAgenda();
+        else UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
     },
 
     mostrarModalPago(id, abonoActual, falta) {
         State.modalContext = { id, abonoActual, falta };
-        
-        document.getElementById('modal-deuda-texto').textContent = 
-            `El cliente aún debe: ${falta.toFixed(2)} €`;
+        document.getElementById('modal-deuda-texto').textContent = `Falta pagar: ${falta.toFixed(2)} €`;
         document.getElementById('modal-input-pago').value = falta.toFixed(2);
         document.getElementById('modal-pago').classList.add('active');
-        
         setTimeout(() => document.getElementById('modal-input-pago').focus(), 100);
     },
 
@@ -1223,69 +758,47 @@ const App = {
 
     async confirmarPago() {
         if (!State.modalContext) return;
-
-        const input = document.getElementById('modal-input-pago').value;
-        const montoAdd = parseFloat(input.replace(',', '.'));
-
-        if (isNaN(montoAdd) || montoAdd <= 0) {
-            alert('⚠️ Por favor ingresa una cantidad válida mayor a 0');
-            return;
-        }
+        const montoAdd = parseFloat(document.getElementById('modal-input-pago').value.replace(',', '.'));
+        if (isNaN(montoAdd) || montoAdd <= 0) return alert('⚠️ Cantidad inválida');
 
         const nuevoAbono = parseFloat(State.modalContext.abonoActual) + montoAdd;
-
         const resultado = await DB.actualizarAbono(State.modalContext.id, nuevoAbono);
 
         if (resultado.success) {
-            UI.mostrarAlerta('💰 ¡Pago registrado con éxito!');
+            UI.mostrarAlerta('💰 ¡Pago registrado!');
             await this.cargarAgenda();
         } else {
             UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
         }
-
         this.cerrarModal();
     },
 
     async cargarFinanzas() {
         if (!State.usuario) return;
-
         const contenedor = document.getElementById('resumen-finanzas');
         const fInicio = document.getElementById('filtro-inicio').value;
         const fFin = document.getElementById('filtro-fin').value;
-
-        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
-
+        
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando...</p>';
         const resultado = await DB.obtenerPedidosFiltrados(fInicio, fFin);
 
-        if (!resultado.success) {
-            contenedor.innerHTML = UI.renderizarVacio('Error al calcular las finanzas', '⚠️');
-            return;
-        }
+        if (!resultado.success) return contenedor.innerHTML = UI.renderizarVacio('Error de cálculo', '⚠️');
 
-        let totalVendido = 0;
-        let totalCobrado = 0;
-        let totalFaltaCobrar = 0;
-
+        let totalVendido = 0, totalCobrado = 0, totalFaltaCobrar = 0;
         resultado.data.forEach(p => {
             const totalPedido = p.precio * p.cantidad;
             totalVendido += totalPedido;
             totalCobrado += parseFloat(p.abono);
-            
-            if (p.abono < totalPedido) {
-                totalFaltaCobrar += (totalPedido - p.abono);
-            }
+            if (p.abono < totalPedido) totalFaltaCobrar += (totalPedido - p.abono);
         });
 
-        let textoPeriodo = 'Histórico Completo';
-        if (fInicio || fFin) {
-            textoPeriodo = `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}`;
-        }
-
+        const textoPeriodo = (fInicio || fFin) ? `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}` : 'Histórico Completo';
         contenedor.innerHTML = UI.renderizarFinanzas(totalVendido, totalCobrado, totalFaltaCobrar, textoPeriodo);
     },
 
+    // APLICACIÓN DE LA CORRECCIÓN: String(p.id) === String(idPedido)
     enviarWhatsApp(idPedido) {
-        const pedido = State.pedidos.find(p => p.id == idPedido);
+        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
         if (!pedido || !pedido.telefono) return;
 
         const total = pedido.precio * pedido.cantidad;
@@ -1311,26 +824,19 @@ const App = {
         window.open(url, '_blank');
     },
 
+    // APLICACIÓN DE LA CORRECCIÓN: String(p.id) === String(idPedido)
     imprimirComanda(idPedido) {
-        const pedido = State.pedidos.find(p => p.id == idPedido);
+        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
         if (!pedido) return;
 
         const total = pedido.precio * pedido.cantidad;
         const resta = total - pedido.abono;
 
-        document.getElementById('tk-fecha').textContent = 
-            `ENTREGAR EL: ${Utils.formatearFecha(pedido.fecha_entrega)}`;
-        document.getElementById('tk-producto').textContent = 
-            `${pedido.cantidad}x ${pedido.producto}`;
+        document.getElementById('tk-fecha').textContent = `ENTREGAR EL: ${Utils.formatearFecha(pedido.fecha_entrega)}`;
+        document.getElementById('tk-producto').textContent = `${pedido.cantidad}x ${pedido.producto}`;
         document.getElementById('tk-cliente').textContent = pedido.cliente;
         document.getElementById('tk-total').textContent = `${total.toFixed(2)} €`;
-        
-        if (resta > 0) {
-            document.getElementById('tk-pago').textContent = 
-                `DEBE ${resta.toFixed(2)} € (Abonó ${pedido.abono}€)`;
-        } else {
-            document.getElementById('tk-pago').textContent = '✅ PAGADO COMPLETO';
-        }
+        document.getElementById('tk-pago').textContent = resta > 0 ? `DEBE ${resta.toFixed(2)} € (Abonó ${pedido.abono}€)` : '✅ PAGADO COMPLETO';
 
         document.body.classList.add('modo-ticket');
         window.print();
@@ -1344,13 +850,23 @@ const App = {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════
-// INICIALIZACIÓN
-// ═══════════════════════════════════════════════════════════════════
-
-document.addEventListener('DOMContentLoaded', () => {
-    App.init();
+// REGISTRO DE SERVICE WORKER AÑADIDO
+document.addEventListener('DOMContentLoaded', () => { 
+    App.init(); 
 });
+
+// Registrar el Service Worker para la PWA
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then((registration) => {
+                console.log('Service Worker registrado con éxito:', registration.scope);
+            })
+            .catch((error) => {
+                console.log('Fallo al registrar el Service Worker:', error);
+            });
+    });
+}
 </script>
 </body>
 </html>
