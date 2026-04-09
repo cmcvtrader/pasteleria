@@ -4,16 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dulces y Postres - Obrador</title>
-    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f472b6">
-    <link rel="apple-touch-icon" href="icono-192.png">
-    
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
     <style>
         :root {
-            /* PALETA PASTEL REPOSTERÍA (ORIGINAL) */
             --bg: #fff5f8;             
             --surface: #ffffff;        
             --border: #fce7f3;         
@@ -108,20 +103,122 @@
             font-size: 0.85rem; transition: background 0.2s;
         }
         .btn-print-comanda:hover { background: #f1f5f9; }
-        .btn-whatsapp {
-            width: 100%; padding: 10px; background: #25D366; color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-            margin-top: 8px; font-size: 0.85rem; transition: background 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+
+        .btn-cancelar {
+            width: 100%; padding: 10px; background: var(--red-light); color: var(--red-text);
+            border: 2px solid var(--red-pastel); border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 8px;
+            font-size: 0.85rem; transition: all 0.2s;
         }
-        .btn-whatsapp:hover { background: #128C7E; }
+        .btn-cancelar:hover { background: var(--red-pastel); color: white; }
+
+        /* SELECTOR DE CLIENTE CON CONTACTOS */
+        .cliente-selector-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .cliente-input-wrapper {
+            position: relative;
+            display: flex;
+            gap: 8px;
+        }
+
+        .cliente-input-wrapper input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .btn-contactos {
+            padding: 14px 16px;
+            background: var(--accent-light);
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            color: var(--accent-text);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-contactos:active {
+            transform: scale(0.95);
+        }
+
+        .btn-contactos:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* DROPDOWN DE SUGERENCIAS */
+        .sugerencias-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .sugerencias-dropdown.active {
+            display: block;
+        }
+
+        .sugerencia-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sugerencia-item:last-child {
+            border-bottom: none;
+        }
+
+        .sugerencia-item:hover {
+            background: var(--primary-light);
+        }
+
+        .sugerencia-icono {
+            font-size: 1.2rem;
+        }
+
+        .sugerencia-info {
+            flex: 1;
+        }
+
+        .sugerencia-nombre {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .sugerencia-detalles {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
 
         /* TARJETAS DE PEDIDO */
         .pedido-card {
             background: var(--surface); border: 2px solid var(--border);
             border-radius: 16px; padding: 18px; margin-bottom: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+            transition: opacity 0.3s;
         }
+        
+        .pedido-card.cancelado {
+            opacity: 0.6;
+            background: var(--red-light);
+            border-color: var(--red-pastel);
+        }
+
         .pedido-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .pedido-cliente { font-weight: 600; font-size: 1.15rem; color: var(--text); font-family: var(--serif); }
         .pedido-producto { color: var(--text); font-size: 0.95rem; margin-bottom: 12px; }
@@ -134,6 +231,7 @@
         .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
         .badge-pendiente { background: var(--accent-light); color: var(--accent-text); border: 1px solid var(--accent); }
         .badge-entregado { background: var(--secondary-light); color: var(--secondary-text); border: 1px solid var(--secondary); }
+        .badge-cancelado { background: var(--red-light); color: var(--red-text); border: 1px solid var(--red-pastel); }
         
         .pago-status { font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 8px; display: inline-block;}
         .pago-debe { background: var(--red-light); color: var(--red-text); border: 1px solid var(--red-pastel); }
@@ -167,7 +265,7 @@
 
         .hidden { display: none !important; }
         
-        /* MODAL CUSTOM PARA PAGOS */
+        /* MODAL CUSTOM PARA PAGOS Y CONFIRMACIONES */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;
@@ -180,10 +278,13 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
         .modal-title { font-family: var(--serif); font-size: 1.5rem; color: var(--primary); margin-bottom: 15px; }
+        .modal-title.warning { color: var(--red-text); }
+        .modal-mensaje { color: var(--text); margin-bottom: 20px; line-height: 1.5; }
         .modal-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         .btn-modal { padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; font-size: 0.95rem; }
         .btn-modal-cancel { background: #f1f5f9; color: var(--text); }
         .btn-modal-confirm { background: var(--primary); color: white; }
+        .btn-modal-danger { background: var(--red-text); color: white; }
 
         #msg-alerta {
             display: none; padding: 14px; border-radius: 12px; text-align: center; margin-bottom: 18px; font-weight: 500;
@@ -201,7 +302,7 @@
         #ticket-impresion { display: none; }
 
         @media print {
-            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .btn-whatsapp, .filtro-finanzas { display: none !important; }
+            .nav-bar, .btn-logout, .btn-primary, .btn-entregar, .btn-print-comanda, .btn-cancelar, .filtro-finanzas, .btn-contactos { display: none !important; }
             body { background: white; color: black; }
             .app-container { box-shadow: none; border: none; max-width: 100%; padding-bottom: 0; }
             
@@ -224,11 +325,63 @@
             body.modo-agenda .pedido-card { border: 2px solid #000; page-break-inside: avoid; }
             body.modo-agenda .badge { border: 1px solid #000; color: #000; }
             body.modo-agenda .pago-status { border: 1px solid #000; color: #000; }
+            body.modo-agenda .pedido-card.cancelado { display: none; }
+        }
+
+        /* TOAST NOTIFICATION */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* FILTRO DE ESTADO */
+        .filtro-estado {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filtro-btn {
+            padding: 8px 16px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filtro-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
         }
     </style>
 </head>
 <body>
 
+<!-- TICKET DE IMPRESIÓN -->
 <div id="ticket-impresion">
     <div class="ticket-header">
         <h1>DULCES Y POSTRES</h1>
@@ -247,6 +400,7 @@
     <p style="text-align: center; font-size: 0.8rem; margin-top: 30px;">FIN DE COMANDA</p>
 </div>
 
+<!-- MODAL PARA PAGOS -->
 <div id="modal-pago" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-title">💰 Registrar Pago</div>
@@ -260,6 +414,24 @@
     </div>
 </div>
 
+<!-- MODAL PARA CANCELAR PEDIDO -->
+<div id="modal-cancelar" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-title warning">⚠️ Cancelar Pedido</div>
+        <div class="modal-mensaje" id="modal-cancelar-mensaje">
+            ¿Estás seguro de que quieres cancelar este pedido?
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-modal btn-modal-cancel" onclick="App.cerrarModalCancelar()">No, conservar</button>
+            <button class="btn-modal btn-modal-danger" onclick="App.confirmarCancelar()">Sí, cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="toast"></div>
+
+<!-- PANTALLA DE LOGIN -->
 <div id="pantalla-login" class="login-container">
     <div class="login-box">
         <span class="login-logo">🧁</span>
@@ -272,8 +444,10 @@
     </div>
 </div>
 
+<!-- APLICACIÓN PRINCIPAL -->
 <div id="pantalla-app" class="app-container hidden">
 
+    <!-- VISTA: NUEVO PEDIDO -->
     <div id="view-nuevo">
         <div class="header">
             <span class="header-title">✨ Nuevo Pedido</span>
@@ -283,9 +457,15 @@
             <div id="msg-alerta"></div>
 
             <label>Nombre del Cliente</label>
-            <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez">
-            <label>WhatsApp del Cliente <span style="color:var(--muted);font-weight:400;font-size:0.8rem">(opcional, con prefijo país)</span></label>
-            <input type="tel" id="in-telefono" placeholder="Ej. 34612345678">
+            <div class="cliente-selector-container">
+                <div class="cliente-input-wrapper">
+                    <input type="text" id="in-cliente" placeholder="Ej. Diana Gutierrez" autocomplete="off">
+                    <button class="btn-contactos" id="btn-contactos" title="Elegir de contactos">
+                        📱
+                    </button>
+                </div>
+                <div class="sugerencias-dropdown" id="sugerencias-dropdown"></div>
+            </div>
 
             <label>Producto o Tarta</label>
             <input type="text" id="in-producto" placeholder="Ej. Torta Tres Leches">
@@ -334,14 +514,23 @@
         </div>
     </div>
 
+    <!-- VISTA: AGENDA -->
     <div id="view-agenda" class="hidden">
         <div class="header">
             <span class="header-title">📅 Agenda del Obrador</span>
             <button class="btn-logout" onclick="App.cerrarSesion()">Salir</button>
         </div>
         <div class="content" style="padding-bottom: 40px;">
+            
+            <div class="filtro-estado">
+                <button class="filtro-btn active" onclick="App.filtrarPorEstado('todos')">Todos</button>
+                <button class="filtro-btn" onclick="App.filtrarPorEstado('Pendiente')">Pendientes</button>
+                <button class="filtro-btn" onclick="App.filtrarPorEstado('Entregado')">Entregados</button>
+                <button class="filtro-btn" onclick="App.filtrarPorEstado('Cancelado')">Cancelados</button>
+            </div>
+
             <button class="btn-primary" onclick="App.imprimirAgenda()" style="background: var(--text); margin-bottom: 20px;">
-                🖨️ Imprimir Agenda Completa
+                🖨️ Imprimir Agenda Activa
             </button>
             <div id="lista-pedidos">
                 <p style="text-align:center; color:var(--muted); padding:20px;">Cargando pedidos...</p>
@@ -349,6 +538,7 @@
         </div>
     </div>
 
+    <!-- VISTA: FINANZAS -->
     <div id="view-finanzas" class="hidden">
         <div class="header">
             <span class="header-title">💰 Balance y Pagos</span>
@@ -374,9 +564,39 @@
             <div id="resumen-finanzas">
                 <p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>
             </div>
+
+            <!-- COSTOS DE MATERIALES -->
+            <div class="finanzas-card" id="card-costos">
+                <h3>Costos de materiales</h3>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">
+                    Registra compras de ingredientes, envases y otros materiales para calcular el beneficio real.
+                </p>
+                <div class="input-grid" style="margin-top: 12px;">
+                    <div>
+                        <label>Fecha del costo</label>
+                        <input type="date" id="costo-fecha" style="margin-bottom: 0; padding: 10px;">
+                    </div>
+                    <div>
+                        <label>Categoría</label>
+                        <input type="text" id="costo-categoria" placeholder="Ej. Harina, Decoración" style="margin-bottom: 0;">
+                    </div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <label>Importe (€)</label>
+                    <input type="number" id="costo-monto" placeholder="0.00" step="0.10">
+                </div>
+                <div style="margin-top: 12px;">
+                    <label>Descripción (opcional)</label>
+                    <input type="text" id="costo-descripcion" placeholder="Ej. Compra semanal Carrefour">
+                </div>
+                <button class="btn-primary" onclick="App.registrarCosto()" style="margin-top: 14px; padding: 10px; font-size: 0.9rem;">
+                    ➕ Guardar costo de materiales
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- NAVEGACIÓN -->
     <div class="nav-bar">
         <div class="nav-item active" id="tab-nuevo" onclick="App.cambiarPestana('nuevo')">📝 Nuevo</div>
         <div class="nav-item" id="tab-agenda" onclick="App.cambiarPestana('agenda')">📅 Agenda</div>
@@ -392,15 +612,21 @@
 
 const CONFIG = {
     SUPABASE_URL: 'https://lvnnmddprjaettekxvfi.supabase.co',
-    SUPABASE_KEY: 'sb_publishable_aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh',
-    TABLE_NAME: 'pasteleria'
+    SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2bm5tZGRwcmphZXR0ZWt4dmZpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2OTc4MjUsImV4cCI6MjA1MjI3MzgyNX0.aD36EjtwfWAKWKQDSt2Yiw_RjgB1urh',
+    TABLE_NAME: 'pasteleria',
+    COSTOS_TABLE_NAME: 'costos_materiales'
 };
 
 const State = {
     supabase: null,
     usuario: null,
     pedidos: [],
-    modalContext: null
+    pedidosFiltrados: [],
+    filtroActual: 'todos',
+    modalContext: null,
+    modalCancelarContext: null,
+    clientesFrecuentes: [],
+    contactPickerSupported: false
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -431,14 +657,133 @@ const Utils = {
 
     toggle(id, mostrar) {
         const el = document.getElementById(id);
-        if (el) el.classList.toggle('hidden', !mostrar);
+        if (el) {
+            el.classList.toggle('hidden', !mostrar);
+        }
     },
 
     log(tipo, mensaje, data = null) {
         const timestamp = new Date().toISOString();
         const prefix = `[${timestamp}] [${tipo.toUpperCase()}]`;
-        if (tipo === 'error') console.error(prefix, mensaje, data || '');
-        else console.log(prefix, mensaje, data || '');
+        
+        if (tipo === 'error') {
+            console.error(prefix, mensaje, data || '');
+        } else {
+            console.log(prefix, mensaje, data || '');
+        }
+    },
+
+    mostrarToast(mensaje, duracion = 3000) {
+        const toast = document.getElementById('toast');
+        toast.textContent = mensaje;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, duracion);
+    },
+
+    normalizarNombre(nombre) {
+        return nombre.trim().toLowerCase();
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// GESTOR DE CONTACTOS
+// ═══════════════════════════════════════════════════════════════════
+
+const Contactos = {
+    verificarSoporte() {
+        State.contactPickerSupported = 'contacts' in navigator && 'ContactsManager' in window;
+        Utils.log('info', `Contact Picker API soportada: ${State.contactPickerSupported}`);
+        return State.contactPickerSupported;
+    },
+
+    async abrirSelector() {
+        if (!State.contactPickerSupported) {
+            Utils.mostrarToast('⚠️ Tu navegador no soporta acceso a contactos');
+            Utils.log('warn', 'Contact Picker API no disponible');
+            return null;
+        }
+
+        try {
+            const props = ['name', 'tel'];
+            const opts = { multiple: false };
+
+            const supported = await navigator.contacts.getProperties();
+            Utils.log('info', 'Propiedades de contactos disponibles:', supported);
+
+            const contacts = await navigator.contacts.select(props, opts);
+            
+            if (contacts && contacts.length > 0) {
+                const contacto = contacts[0];
+                Utils.log('info', 'Contacto seleccionado:', contacto);
+                
+                return {
+                    nombre: contacto.name && contacto.name[0] ? contacto.name[0] : 'Sin nombre',
+                    telefono: contacto.tel && contacto.tel[0] ? contacto.tel[0] : null
+                };
+            }
+
+            return null;
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                Utils.log('info', 'Usuario canceló la selección de contacto');
+            } else {
+                Utils.log('error', 'Error al acceder a contactos', err);
+                Utils.mostrarToast('⚠️ No se pudo acceder a los contactos');
+            }
+            return null;
+        }
+    },
+
+    async obtenerClientesFrecuentes() {
+        try {
+            const { data, error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .select('cliente')
+                .eq('user_id', State.usuario.id)
+                .neq('estado', 'Cancelado');
+
+            if (error) throw error;
+
+            const frecuencia = {};
+            data.forEach(pedido => {
+                const nombreNormalizado = Utils.normalizarNombre(pedido.cliente);
+                frecuencia[nombreNormalizado] = (frecuencia[nombreNormalizado] || 0) + 1;
+            });
+
+            const clientesOrdenados = Object.entries(frecuencia)
+                .map(([nombre, count]) => {
+                    const pedidoOriginal = data.find(p => Utils.normalizarNombre(p.cliente) === nombre);
+                    return {
+                        nombre: pedidoOriginal.cliente,
+                        pedidos: count
+                    };
+                })
+                .sort((a, b) => b.pedidos - a.pedidos)
+                .slice(0, 10);
+
+            State.clientesFrecuentes = clientesOrdenados;
+            Utils.log('info', `Clientes frecuentes cargados: ${clientesOrdenados.length}`);
+            
+            return clientesOrdenados;
+        } catch (err) {
+            Utils.log('error', 'Error al obtener clientes frecuentes', err);
+            return [];
+        }
+    },
+
+    filtrarClientes(termino) {
+        if (!termino || termino.length < 2) return [];
+
+        const terminoNormalizado = Utils.normalizarNombre(termino);
+        
+        return State.clientesFrecuentes
+            .filter(cliente => 
+                Utils.normalizarNombre(cliente.nombre).includes(terminoNormalizado)
+            )
+            .slice(0, 5);
     }
 };
 
@@ -449,14 +794,19 @@ const Utils = {
 const DB = {
     async crearPedido(datos) {
         try {
-            const { error } = await State.supabase.from(CONFIG.TABLE_NAME).insert([{
-                user_id: State.usuario.id,
-                ...datos,
-                estado: 'Pendiente'
-            }]);
+            const { error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .insert([{
+                    user_id: State.usuario.id,
+                    ...datos,
+                    estado: 'Pendiente'
+                }]);
+
             if (error) throw error;
+            Utils.log('info', 'Pedido creado exitosamente');
             return { success: true };
         } catch (err) {
+            Utils.log('error', 'Error al crear pedido', err);
             return { success: false, error: err.message };
         }
     },
@@ -468,9 +818,12 @@ const DB = {
                 .select('*')
                 .eq('user_id', State.usuario.id)
                 .order('fecha_entrega', { ascending: true });
+
             if (error) throw error;
+            Utils.log('info', `Pedidos cargados: ${data.length}`);
             return { success: true, data };
         } catch (err) {
+            Utils.log('error', 'Error al obtener pedidos', err);
             return { success: false, error: err.message, data: [] };
         }
     },
@@ -482,9 +835,12 @@ const DB = {
                 .update({ estado: nuevoEstado })
                 .eq('id', id)
                 .eq('user_id', State.usuario.id);
+
             if (error) throw error;
+            Utils.log('info', `Estado actualizado: ${nuevoEstado}`);
             return { success: true };
         } catch (err) {
+            Utils.log('error', 'Error al actualizar estado', err);
             return { success: false, error: err.message };
         }
     },
@@ -496,23 +852,54 @@ const DB = {
                 .update({ abono: nuevoAbono })
                 .eq('id', id)
                 .eq('user_id', State.usuario.id);
+
             if (error) throw error;
+            Utils.log('info', `Abono actualizado: ${nuevoAbono}`);
             return { success: true };
         } catch (err) {
+            Utils.log('error', 'Error al actualizar abono', err);
+            return { success: false, error: err.message };
+        }
+    },
+
+    async eliminarPedido(id) {
+        try {
+            const { error } = await State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .delete()
+                .eq('id', id)
+                .eq('user_id', State.usuario.id);
+
+            if (error) throw error;
+            Utils.log('info', 'Pedido eliminado permanentemente');
+            return { success: true };
+        } catch (err) {
+            Utils.log('error', 'Error al eliminar pedido', err);
             return { success: false, error: err.message };
         }
     },
 
     async obtenerPedidosFiltrados(fechaInicio, fechaFin) {
         try {
-            let query = State.supabase.from(CONFIG.TABLE_NAME).select('*').eq('user_id', State.usuario.id);
-            if (fechaInicio) query = query.gte('fecha_pedido', fechaInicio);
-            if (fechaFin) query = query.lte('fecha_pedido', fechaFin);
-            
+            let query = State.supabase
+                .from(CONFIG.TABLE_NAME)
+                .select('*')
+                .eq('user_id', State.usuario.id);
+
+            if (fechaInicio) {
+                query = query.gte('fecha_pedido', fechaInicio);
+            }
+            if (fechaFin) {
+                query = query.lte('fecha_pedido', fechaFin);
+            }
+
             const { data, error } = await query;
             if (error) throw error;
+            
+            Utils.log('info', `Pedidos filtrados: ${data.length}`);
             return { success: true, data };
         } catch (err) {
+            Utils.log('error', 'Error al filtrar pedidos', err);
             return { success: false, error: err.message, data: [] };
         }
     }
@@ -527,22 +914,32 @@ const UI = {
         const total = pedido.precio * pedido.cantidad;
         const resta = total - pedido.abono;
         const esPendiente = pedido.estado === 'Pendiente';
-        const badgeClass = esPendiente ? 'badge-pendiente' : 'badge-entregado';
+        const esCancelado = pedido.estado === 'Cancelado';
+        
+        let badgeClass = 'badge-pendiente';
+        if (pedido.estado === 'Entregado') badgeClass = 'badge-entregado';
+        if (pedido.estado === 'Cancelado') badgeClass = 'badge-cancelado';
         
         const estadoPago = resta > 0
             ? `<span class="pago-status pago-debe">Falta cobrar: ${resta.toFixed(2)} €</span>`
             : `<span class="pago-status pago-pagado">Pagado Totalmente</span>`;
 
-        const btnAbono = resta > 0
+        const btnAbono = (resta > 0 && !esCancelado)
             ? `<button class="btn-print-comanda" style="background: var(--accent-light); color: var(--accent-text); border-color: var(--accent);" onclick="App.mostrarModalPago('${pedido.id}', ${pedido.abono}, ${resta})">💳 Registrar Pago / Abono</button>`
             : '';
 
-        const btnEntregar = esPendiente
+        const btnEntregar = (esPendiente && !esCancelado)
             ? `<button class="btn-entregar" onclick="App.marcarEntregado('${pedido.id}')">✔️ Marcar Entregado</button>`
             : '';
 
+        const btnCancelar = !esCancelado
+            ? `<button class="btn-cancelar" onclick="App.mostrarModalCancelar('${pedido.id}', '${Utils.escaparHTML(pedido.cliente)}', '${Utils.escaparHTML(pedido.producto)}')">❌ Cancelar Pedido</button>`
+            : '';
+
+        const cardClass = esCancelado ? 'pedido-card cancelado' : 'pedido-card';
+
         return `
-            <div class="pedido-card">
+            <div class="${cardClass}">
                 <div class="pedido-header">
                     <span class="pedido-cliente">👤 ${Utils.escaparHTML(pedido.cliente)}</span>
                     <span class="badge ${badgeClass}">${pedido.estado}</span>
@@ -561,26 +958,77 @@ const UI = {
                 </div>
                 ${btnAbono}
                 ${btnEntregar}
-                <button class="btn-print-comanda" onclick="App.imprimirComanda('${pedido.id}')">🖨️ Imprimir Comanda para Cocina</button>
-            ${pedido.telefono ? `<button class="btn-whatsapp" onclick="App.enviarWhatsApp('${pedido.id}')">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                Enviar por WhatsApp
-            </button>` : ''}
+                ${!esCancelado ? `<button class="btn-print-comanda" onclick="App.imprimirComanda('${pedido.id}')">🖨️ Imprimir Comanda para Cocina</button>` : ''}
+                ${btnCancelar}
             </div>
         `;
     },
 
     renderizarVacio(mensaje, icono = '🧁') {
-        return `<div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);"><div style="font-size: 3rem; margin-bottom: 15px;">${icono}</div>${mensaje}</div>`;
+        return `
+            <div style="text-align:center; padding:40px 20px; border:2px dashed var(--border); border-radius:16px; color:var(--muted);">
+                <div style="font-size: 3rem; margin-bottom: 15px;">${icono}</div>
+                ${mensaje}
+            </div>
+        `;
     },
 
-    renderizarFinanzas(total, cobrado, pendiente, periodo = 'Histórico Completo') {
-        return `
-            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">${periodo}</div>
-            <div class="finanzas-card"><h3>Total Ventas (Esperado)</h3><div class="monto">${total.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p></div>
-            <div class="finanzas-card"><h3>Dinero Cobrado (Abonos)</h3><div class="monto cobrado">${cobrado.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p></div>
-            <div class="finanzas-card"><h3>Pendiente por Cobrar</h3><div class="monto pendiente">${pendiente.toFixed(2)} €</div><p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p></div>
+    renderizarFinanzas(total, cobrado, pendiente, periodo = 'Histórico Completo', costos = null, beneficioReal = null) {
+        let html = `
+            <div style="text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold;">
+                ${periodo}
+            </div>
+            <div class="finanzas-card">
+                <h3>Total Ventas (Esperado)</h3>
+                <div class="monto">${total.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">El valor de todos los dulces anotados.</p>
+            </div>
+            
+            <div class="finanzas-card">
+                <h3>Dinero Cobrado (Abonos)</h3>
+                <div class="monto cobrado">${cobrado.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Dinero que ya tienes en caja o cuenta.</p>
+            </div>
+
+            <div class="finanzas-card">
+                <h3>Pendiente por Cobrar</h3>
+                <div class="monto pendiente">${pendiente.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">A cobrar cuando entregues los pedidos.</p>
+            </div>
         `;
+        if (costos !== null) {
+            html += `
+            <div class="finanzas-card">
+                <h3>Costos de materiales</h3>
+                <div class="monto">${costos.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Suma de todos los costos registrados en el periodo.</p>
+            </div>
+            `;
+        }
+        if (beneficioReal !== null) {
+            html += `
+            <div class="finanzas-card">
+                <h3>Beneficio real estimado</h3>
+                <div class="monto">${beneficioReal.toFixed(2)} €</div>
+                <p style="font-size:0.85rem; color:var(--muted); margin-top:5px;">Ventas netas menos costos de materiales.</p>
+            </div>
+            `;
+        }
+        return html;
+    },
+
+    renderizarSugerencias(clientes) {
+        if (clientes.length === 0) return '';
+
+        return clientes.map(cliente => `
+            <div class="sugerencia-item" onclick="App.seleccionarCliente('${Utils.escaparHTML(cliente.nombre).replace(/'/g, "\\'")}')">
+                <span class="sugerencia-icono">👤</span>
+                <div class="sugerencia-info">
+                    <div class="sugerencia-nombre">${Utils.escaparHTML(cliente.nombre)}</div>
+                    <div class="sugerencia-detalles">${cliente.pedidos} pedido${cliente.pedidos > 1 ? 's' : ''}</div>
+                </div>
+            </div>
+        `).join('');
     },
 
     mostrarAlerta(texto) {
@@ -610,6 +1058,17 @@ const UI = {
             btn.textContent = textoOriginal;
             btn.disabled = false;
         }
+    },
+
+    mostrarSugerencias(clientes) {
+        const dropdown = document.getElementById('sugerencias-dropdown');
+        dropdown.innerHTML = this.renderizarSugerencias(clientes);
+        dropdown.classList.add('active');
+    },
+
+    ocultarSugerencias() {
+        const dropdown = document.getElementById('sugerencias-dropdown');
+        dropdown.classList.remove('active');
     }
 };
 
@@ -619,10 +1078,20 @@ const UI = {
 
 const App = {
     async init() {
+        Utils.log('info', 'Inicializando aplicación...');
+        
         State.supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+        
+        Contactos.verificarSoporte();
+        
         document.getElementById('in-fecha-pedido').value = Utils.obtenerFechaHoy();
+        const costoFechaInput = document.getElementById('costo-fecha');
+        if (costoFechaInput) { costoFechaInput.value = Utils.obtenerFechaHoy(); }
+        
         this.configurarEventos();
+        
         await this.verificarSesion();
+        
         State.supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_OUT' || !session) {
                 State.usuario = null;
@@ -633,42 +1102,91 @@ const App = {
     },
 
     configurarEventos() {
-        document.getElementById('email').addEventListener('keydown', (e) => { if (e.key === 'Enter') this.iniciarSesion(); });
-        document.getElementById('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') this.iniciarSesion(); });
+        document.getElementById('email').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.iniciarSesion();
+        });
+        document.getElementById('password').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.iniciarSesion();
+        });
+
         document.getElementById('btn-login').addEventListener('click', () => this.iniciarSesion());
+        
         document.getElementById('btn-guardar').addEventListener('click', () => this.guardarPedido());
+
+        document.getElementById('btn-contactos').addEventListener('click', () => this.abrirContactos());
+
+        const inputCliente = document.getElementById('in-cliente');
+        
+        inputCliente.addEventListener('input', (e) => {
+            const termino = e.target.value;
+            if (termino.length >= 2) {
+                const clientes = Contactos.filtrarClientes(termino);
+                UI.mostrarSugerencias(clientes);
+            } else {
+                UI.ocultarSugerencias();
+            }
+        });
+
+        inputCliente.addEventListener('focus', async () => {
+            if (State.clientesFrecuentes.length === 0 && State.usuario) {
+                await Contactos.obtenerClientesFrecuentes();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.cliente-selector-container')) {
+                UI.ocultarSugerencias();
+            }
+        });
     },
 
     async verificarSesion() {
         try {
             const { data: { session } } = await State.supabase.auth.getSession();
+            
             if (session) {
                 State.usuario = session.user;
                 Utils.toggle('pantalla-login', false);
                 Utils.toggle('pantalla-app', true);
+                
+                await Contactos.obtenerClientesFrecuentes();
                 await this.cargarAgenda();
+                
+                Utils.log('info', `Sesión activa: ${session.user.email}`);
             } else {
                 Utils.toggle('pantalla-login', true);
                 Utils.toggle('pantalla-app', false);
             }
-        } catch (err) { Utils.log('error', 'Error sesión', err); }
+        } catch (err) {
+            Utils.log('error', 'Error al verificar sesión', err);
+        }
     },
 
     async iniciarSesion() {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
-        if (!email || !password) return UI.mostrarErrorLogin('Completa ambos campos');
+
+        if (!email || !password) {
+            UI.mostrarErrorLogin('Por favor completa ambos campos');
+            return;
+        }
+
         UI.ocultarErrorLogin();
         UI.setBotonLoading('btn-login', true, 'Entrar al Obrador', 'Entrando...');
+
         try {
             const { error, data } = await State.supabase.auth.signInWithPassword({ email, password });
+            
             if (error) throw error;
+
             State.usuario = data.user;
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
+            
             await this.verificarSesion();
         } catch (err) {
             UI.mostrarErrorLogin('Credenciales incorrectas');
+            Utils.log('error', 'Error de login', err);
         } finally {
             UI.setBotonLoading('btn-login', false, 'Entrar al Obrador', 'Entrando...');
         }
@@ -677,6 +1195,8 @@ const App = {
     async cerrarSesion() {
         await State.supabase.auth.signOut();
         this.cambiarPestana('nuevo');
+        State.clientesFrecuentes = [];
+        Utils.log('info', 'Sesión cerrada');
     },
 
     cambiarPestana(pestana) {
@@ -684,8 +1204,29 @@ const App = {
             Utils.toggle('view-' + p, p === pestana);
             document.getElementById('tab-' + p).classList.toggle('active', p === pestana);
         });
-        if (pestana === 'agenda') this.cargarAgenda();
+
+        if (pestana === 'agenda') {
+            State.filtroActual = 'todos';
+            this.actualizarBotonesFiltro();
+            this.cargarAgenda();
+        }
         if (pestana === 'finanzas') this.cargarFinanzas();
+    },
+
+    async abrirContactos() {
+        const contacto = await Contactos.abrirSelector();
+        
+        if (contacto) {
+            document.getElementById('in-cliente').value = contacto.nombre;
+            Utils.mostrarToast(`✅ Cliente seleccionado: ${contacto.nombre}`);
+            UI.ocultarSugerencias();
+        }
+    },
+
+    seleccionarCliente(nombre) {
+        document.getElementById('in-cliente').value = nombre;
+        UI.ocultarSugerencias();
+        Utils.mostrarToast(`✅ Cliente seleccionado: ${nombre}`);
     },
 
     async guardarPedido() {
@@ -696,58 +1237,133 @@ const App = {
             precio: parseFloat(document.getElementById('in-precio').value),
             abono: parseFloat(document.getElementById('in-abono').value) || 0,
             metodo_pago: document.getElementById('in-metodo').value,
-            telefono: document.getElementById('in-telefono').value.trim().replace(/\D/g, '') || null,
             fecha_pedido: document.getElementById('in-fecha-pedido').value,
             fecha_entrega: document.getElementById('in-fecha-entrega').value
         };
 
-        if (!datos.cliente || !datos.producto || !datos.precio || !datos.fecha_entrega || !datos.cantidad) return UI.mostrarAlerta('⚠️ Completa campos clave');
-        if (!Utils.validarNumeroPositivo(datos.precio) || !Utils.validarNumeroPositivo(datos.abono)) return UI.mostrarAlerta('⚠️ Valores positivos por favor');
-        if (!State.usuario) return UI.mostrarAlerta('⚠️ Error de sesión');
+        if (!datos.cliente || !datos.producto || !datos.precio || !datos.fecha_entrega || !datos.cantidad) {
+            UI.mostrarAlerta('⚠️ Completa cliente, producto, cantidad, precio y fecha de entrega');
+            return;
+        }
+
+        if (!Utils.validarNumeroPositivo(datos.precio) || !Utils.validarNumeroPositivo(datos.abono)) {
+            UI.mostrarAlerta('⚠️ Los valores numéricos deben ser positivos');
+            return;
+        }
+
+        if (!State.usuario) {
+            UI.mostrarAlerta('⚠️ Error de sesión. Recarga la página');
+            return;
+        }
 
         UI.setBotonLoading('btn-guardar', true, 'Anotar Pedido', 'Guardando...');
+
         const resultado = await DB.crearPedido(datos);
 
         if (resultado.success) {
-            UI.mostrarAlerta('✨ ¡Pedido guardado!');
+            UI.mostrarAlerta('✨ ¡Pedido guardado con éxito!');
+            
             document.getElementById('in-cliente').value = '';
             document.getElementById('in-producto').value = '';
             document.getElementById('in-precio').value = '';
             document.getElementById('in-abono').value = '0';
             document.getElementById('in-cantidad').value = '1';
-            document.getElementById('in-telefono').value = '';
             document.getElementById('in-metodo').value = 'Bizum';
+            
+            await Contactos.obtenerClientesFrecuentes();
         } else {
             UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
         }
+
         UI.setBotonLoading('btn-guardar', false, 'Anotar Pedido', 'Guardando...');
+    },
+
+    filtrarPorEstado(estado) {
+        State.filtroActual = estado;
+        this.actualizarBotonesFiltro();
+        this.renderizarPedidosFiltrados();
+    },
+
+    actualizarBotonesFiltro() {
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        const estadosMap = {
+            'todos': 0,
+            'Pendiente': 1,
+            'Entregado': 2,
+            'Cancelado': 3
+        };
+        
+        const index = estadosMap[State.filtroActual];
+        if (index !== undefined) {
+            document.querySelectorAll('.filtro-btn')[index].classList.add('active');
+        }
+    },
+
+    renderizarPedidosFiltrados() {
+        const contenedor = document.getElementById('lista-pedidos');
+        
+        let pedidosFiltrados = State.pedidos;
+        if (State.filtroActual !== 'todos') {
+            pedidosFiltrados = State.pedidos.filter(p => p.estado === State.filtroActual);
+        }
+
+        State.pedidosFiltrados = pedidosFiltrados;
+
+        if (pedidosFiltrados.length === 0) {
+            const mensajes = {
+                'todos': 'No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨',
+                'Pendiente': 'No hay pedidos pendientes.<br><br>¡Todo al día! ✅',
+                'Entregado': 'Aún no hay pedidos entregados.<br><br>¡Pronto habrá! 🎉',
+                'Cancelado': 'No hay pedidos cancelados.<br><br>¡Excelente! 💯'
+            };
+            contenedor.innerHTML = UI.renderizarVacio(mensajes[State.filtroActual]);
+            return;
+        }
+
+        contenedor.innerHTML = pedidosFiltrados.map(p => UI.renderizarPedido(p)).join('');
     },
 
     async cargarAgenda() {
         if (!State.usuario) return;
+
         const contenedor = document.getElementById('lista-pedidos');
-        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Cargando...</p>';
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Actualizando agenda...</p>';
+
         const resultado = await DB.obtenerPedidos();
 
-        if (!resultado.success) return contenedor.innerHTML = UI.renderizarVacio('Error de red', '⚠️');
-        State.pedidos = resultado.data;
+        if (!resultado.success) {
+            contenedor.innerHTML = UI.renderizarVacio('Error de red al cargar la agenda', '⚠️');
+            return;
+        }
 
-        if (resultado.data.length === 0) return contenedor.innerHTML = UI.renderizarVacio('No hay pedidos en la agenda.<br><br>¡Es hora de hornear! 👩‍🍳✨');
-        contenedor.innerHTML = resultado.data.map(p => UI.renderizarPedido(p)).join('');
+        State.pedidos = resultado.data;
+        this.renderizarPedidosFiltrados();
     },
 
     async marcarEntregado(id) {
         if (!confirm('¿Confirmar entrega al cliente?')) return;
+
         const resultado = await DB.actualizarEstado(id, 'Entregado');
-        if (resultado.success) await this.cargarAgenda();
-        else UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+
+        if (resultado.success) {
+            Utils.mostrarToast('✅ Pedido marcado como entregado');
+            await this.cargarAgenda();
+        } else {
+            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+        }
     },
 
     mostrarModalPago(id, abonoActual, falta) {
         State.modalContext = { id, abonoActual, falta };
-        document.getElementById('modal-deuda-texto').textContent = `Falta pagar: ${falta.toFixed(2)} €`;
+        
+        document.getElementById('modal-deuda-texto').textContent = 
+            `El cliente aún debe: ${falta.toFixed(2)} €`;
         document.getElementById('modal-input-pago').value = falta.toFixed(2);
         document.getElementById('modal-pago').classList.add('active');
+        
         setTimeout(() => document.getElementById('modal-input-pago').focus(), 100);
     },
 
@@ -758,85 +1374,135 @@ const App = {
 
     async confirmarPago() {
         if (!State.modalContext) return;
-        const montoAdd = parseFloat(document.getElementById('modal-input-pago').value.replace(',', '.'));
-        if (isNaN(montoAdd) || montoAdd <= 0) return alert('⚠️ Cantidad inválida');
+
+        const input = document.getElementById('modal-input-pago').value;
+        const montoAdd = parseFloat(input.replace(',', '.'));
+
+        if (isNaN(montoAdd) || montoAdd <= 0) {
+            alert('⚠️ Por favor ingresa una cantidad válida mayor a 0');
+            return;
+        }
 
         const nuevoAbono = parseFloat(State.modalContext.abonoActual) + montoAdd;
+
         const resultado = await DB.actualizarAbono(State.modalContext.id, nuevoAbono);
 
         if (resultado.success) {
-            UI.mostrarAlerta('💰 ¡Pago registrado!');
+            UI.mostrarAlerta('💰 ¡Pago registrado con éxito!');
             await this.cargarAgenda();
         } else {
             UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
         }
+
         this.cerrarModal();
+    },
+
+    mostrarModalCancelar(id, cliente, producto) {
+        State.modalCancelarContext = { id, cliente, producto };
+        
+        document.getElementById('modal-cancelar-mensaje').innerHTML = 
+            `¿Estás seguro de que quieres cancelar este pedido?<br><br>
+            <strong>Cliente:</strong> ${cliente}<br>
+            <strong>Producto:</strong> ${producto}<br><br>
+            <em style="color: var(--muted);">El pedido se marcará como cancelado y no se incluirá en las finanzas ni en las impresiones.</em>`;
+        
+        document.getElementById('modal-cancelar').classList.add('active');
+    },
+
+    cerrarModalCancelar() {
+        document.getElementById('modal-cancelar').classList.remove('active');
+        State.modalCancelarContext = null;
+    },
+
+    async confirmarCancelar() {
+        if (!State.modalCancelarContext) return;
+
+        const resultado = await DB.actualizarEstado(State.modalCancelarContext.id, 'Cancelado');
+
+        if (resultado.success) {
+            Utils.mostrarToast('❌ Pedido cancelado');
+            await this.cargarAgenda();
+            await Contactos.obtenerClientesFrecuentes();
+        } else {
+            UI.mostrarAlerta(`⚠️ Error: ${resultado.error}`);
+        }
+
+        this.cerrarModalCancelar();
     },
 
     async cargarFinanzas() {
         if (!State.usuario) return;
+
         const contenedor = document.getElementById('resumen-finanzas');
         const fInicio = document.getElementById('filtro-inicio').value;
         const fFin = document.getElementById('filtro-fin').value;
-        
-        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando...</p>';
+
+        contenedor.innerHTML = '<p style="text-align:center; color:var(--muted);">Calculando cuentas...</p>';
+
         const resultado = await DB.obtenerPedidosFiltrados(fInicio, fFin);
 
-        if (!resultado.success) return contenedor.innerHTML = UI.renderizarVacio('Error de cálculo', '⚠️');
+        if (!resultado.success) {
+            contenedor.innerHTML = UI.renderizarVacio('Error al calcular las finanzas', '⚠️');
+            return;
+        }
 
-        let totalVendido = 0, totalCobrado = 0, totalFaltaCobrar = 0;
+        let totalVendido = 0;
+        let totalCobrado = 0;
+        let totalFaltaCobrar = 0;
+
         resultado.data.forEach(p => {
+            if (p.estado === 'Cancelado') return;
             const totalPedido = p.precio * p.cantidad;
             totalVendido += totalPedido;
             totalCobrado += parseFloat(p.abono);
-            if (p.abono < totalPedido) totalFaltaCobrar += (totalPedido - p.abono);
+            if (p.abono < totalPedido) {
+                totalFaltaCobrar += (totalPedido - p.abono);
+            }
         });
 
-        const textoPeriodo = (fInicio || fFin) ? `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'}` : 'Histórico Completo';
-        contenedor.innerHTML = UI.renderizarFinanzas(totalVendido, totalCobrado, totalFaltaCobrar, textoPeriodo);
+        let totalCostos = 0;
+        const resultadoCostos = await DB.obtenerCostosFiltrados(fInicio, fFin);
+        if (resultadoCostos.success) {
+            resultadoCostos.data.forEach(c => {
+                const monto = parseFloat(c.monto);
+                if (!isNaN(monto)) {
+                    totalCostos += monto;
+                }
+            });
+        } else {
+            Utils.log('error', 'No se pudieron cargar los costos de materiales', resultadoCostos.error);
+        }
+
+        const beneficioReal = totalVendido - totalCostos;
+
+        let textoPeriodo = 'Histórico Completo (sin cancelados)';
+        if (fInicio || fFin) {
+            textoPeriodo = `Filtrado: ${fInicio || 'Inicio'} a ${fFin || 'Hoy'} (sin cancelados)`;
+        }
+
+        contenedor.innerHTML = UI.renderizarFinanzas(totalVendido, totalCobrado, totalFaltaCobrar, textoPeriodo, totalCostos, beneficioReal);
     },
 
-    // APLICACIÓN DE LA CORRECCIÓN: String(p.id) === String(idPedido)
-    enviarWhatsApp(idPedido) {
-        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
-        if (!pedido || !pedido.telefono) return;
-
-        const total = pedido.precio * pedido.cantidad;
-        const resta = total - pedido.abono;
-        const fechaEntrega = Utils.formatearFecha(pedido.fecha_entrega);
-        const fechaPedido = Utils.formatearFecha(pedido.fecha_pedido);
-
-        const pagoStatus = resta > 0
-            ? `💰 *Pendiente por pagar: ${resta.toFixed(2)}€*\n   (Abonado: ${parseFloat(pedido.abono).toFixed(2)}€)`
-            : `✅ *PAGADO COMPLETAMENTE*`;
-
-        const msg = `🍰 *PEDIDO CONFIRMADO - Dulces y Postres*\n\n`
-            + `👤 Cliente: ${pedido.cliente}\n`
-            + `🎂 Producto: ${pedido.cantidad}x ${pedido.producto}\n`
-            + `📅 Fecha pedido: ${fechaPedido}\n`
-            + `🚚 Fecha de entrega: *${fechaEntrega}*\n`
-            + `💵 Total: ${total.toFixed(2)}€\n`
-            + `${pagoStatus}\n`
-            + `💳 Método de pago: ${pedido.metodo_pago}\n\n`
-            + `¡Gracias por tu confianza! 🌸`;
-
-        const url = `https://wa.me/${pedido.telefono}?text=${encodeURIComponent(msg)}`;
-        window.open(url, '_blank');
-    },
-
-    // APLICACIÓN DE LA CORRECCIÓN: String(p.id) === String(idPedido)
     imprimirComanda(idPedido) {
-        const pedido = State.pedidos.find(p => String(p.id) === String(idPedido));
+        const pedido = State.pedidos.find(p => p.id == idPedido);
         if (!pedido) return;
 
         const total = pedido.precio * pedido.cantidad;
         const resta = total - pedido.abono;
 
-        document.getElementById('tk-fecha').textContent = `ENTREGAR EL: ${Utils.formatearFecha(pedido.fecha_entrega)}`;
-        document.getElementById('tk-producto').textContent = `${pedido.cantidad}x ${pedido.producto}`;
+        document.getElementById('tk-fecha').textContent = 
+            `ENTREGAR EL: ${Utils.formatearFecha(pedido.fecha_entrega)}`;
+        document.getElementById('tk-producto').textContent = 
+            `${pedido.cantidad}x ${pedido.producto}`;
         document.getElementById('tk-cliente').textContent = pedido.cliente;
         document.getElementById('tk-total').textContent = `${total.toFixed(2)} €`;
-        document.getElementById('tk-pago').textContent = resta > 0 ? `DEBE ${resta.toFixed(2)} € (Abonó ${pedido.abono}€)` : '✅ PAGADO COMPLETO';
+        
+        if (resta > 0) {
+            document.getElementById('tk-pago').textContent = 
+                `DEBE ${resta.toFixed(2)} € (Abonó ${pedido.abono}€)`;
+        } else {
+            document.getElementById('tk-pago').textContent = '✅ PAGADO COMPLETO';
+        }
 
         document.body.classList.add('modo-ticket');
         window.print();
@@ -850,22 +1516,20 @@ const App = {
     }
 };
 
-// REGISTRO DE SERVICE WORKER AÑADIDO
-document.addEventListener('DOMContentLoaded', () => { 
-    App.init(); 
-});
+// ═══════════════════════════════════════════════════════════════════
+// INICIALIZACIÓN
+// ═══════════════════════════════════════════════════════════════════
 
-// Registrar el Service Worker para la PWA
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+});
+</script>
+
+<script>
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-            .then((registration) => {
-                console.log('Service Worker registrado con éxito:', registration.scope);
-            })
-            .catch((error) => {
-                console.log('Fallo al registrar el Service Worker:', error);
-            });
-    });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed', err));
+  });
 }
 </script>
 </body>
