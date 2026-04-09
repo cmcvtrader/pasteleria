@@ -1483,6 +1483,36 @@ const App = {
         contenedor.innerHTML = UI.renderizarFinanzas(totalVendido, totalCobrado, totalFaltaCobrar, textoPeriodo, totalCostos, beneficioReal);
     },
 
+    async registrarCosto() {
+        if (!State.usuario) {
+            UI.mostrarAlerta('⚠️ Error de sesión. Recarga la página');
+            return;
+        }
+
+        const fecha = document.getElementById('costo-fecha').value;
+        const categoria = document.getElementById('costo-categoria').value.trim() || 'General';
+        const montoStr = document.getElementById('costo-monto').value;
+        const descripcion = document.getElementById('costo-descripcion').value.trim();
+
+        const monto = parseFloat((montoStr || '').replace(',', '.'));
+        if (!fecha || isNaN(monto) || monto <= 0) {
+            UI.mostrarAlerta('⚠️ Completa fecha e importe del costo (debe ser mayor a 0)');
+            return;
+        }
+
+        const datos = { fecha, categoria, descripcion, monto };
+        const resultado = await DB.crearCosto(datos);
+
+        if (resultado.success) {
+            Utils.mostrarToast('✅ Costo registrado');
+            document.getElementById('costo-monto').value = '';
+            document.getElementById('costo-descripcion').value = '';
+            await this.cargarFinanzas();
+        } else {
+            UI.mostrarAlerta(`⚠️ Error al registrar costo: ${resultado.error}`);
+        }
+    },
+
     imprimirComanda(idPedido) {
         const pedido = State.pedidos.find(p => p.id == idPedido);
         if (!pedido) return;
